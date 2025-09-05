@@ -24,6 +24,20 @@ export const devices = [
     batteryLevel: 55,
     status: 'Connected',
   },
+  {
+    id: 3,
+    name: 'FitBand Pro',
+    type: 'Wristband',
+    batteryLevel: 91,
+    status: 'Connected',
+  },
+  {
+    id: 4,
+    name: 'HealthChain',
+    type: 'Chain',
+    batteryLevel: 75,
+    status: 'Connected',
+  },
 ];
 
 export const emergencyContacts = [
