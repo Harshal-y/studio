@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { EmergencyAlertDialog } from './emergency-alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 type Vital = {
   value: number;
@@ -58,6 +59,7 @@ export function VitalsMonitor() {
   const [vitals, setVitals] = useState<VitalsState>(initialVitals);
   const [isEmergency, setIsEmergency] = useState(false);
   const [criticalVital, setCriticalVital] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const getStatus = (
     value: number,
@@ -95,12 +97,19 @@ export function VitalsMonitor() {
           if (newValue > 180 && key === 'heartRate') newValue = 180;
           if (newValue > 100 && key === 'oxygenSaturation') newValue = 100;
 
+          const oldStatus = getStatus(vital.value, vital.thresholds, vital.direction);
+          const newStatus = getStatus(newValue, vital.thresholds, vital.direction);
+
           newVitals[key] = { ...vital, value: newValue };
 
-          const status = getStatus(newValue, vital.thresholds, vital.direction);
-          if (status === 'danger') {
+          if (newStatus === 'danger') {
             criticalConditionDetected = true;
             vitalInDanger = `${nameMap[key]} is ${newValue}${vital.unit}`;
+          } else if (newStatus === 'alert' && oldStatus === 'normal') {
+            toast({
+              title: 'Health Suggestion',
+              description: `Your ${nameMap[key]} is getting high. You might want to take a rest.`,
+            });
           }
         });
 
@@ -113,7 +122,7 @@ export function VitalsMonitor() {
       });
     }, 2000);
     return () => clearInterval(interval);
-  }, [isEmergency]);
+  }, [isEmergency, toast]);
 
   const statusClasses = {
     normal: 'text-green-400',
