@@ -8,7 +8,7 @@ export default function LandingPage() {
   return (
     <div className="relative flex flex-col min-h-screen">
       <Image
-        src="https://picsum.photos/1920/1081"
+        src="https://picsum.photos/1920/1082"
         alt="Healthcare technology background"
         fill
         className="absolute inset-0 -z-10 object-cover opacity-20"
