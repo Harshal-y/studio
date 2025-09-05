@@ -9,10 +9,10 @@ export default function LandingPage() {
     <div className="relative flex flex-col min-h-screen">
       <Image
         src="https://picsum.photos/1920/1080"
-        alt="Abstract background"
+        alt="Healthcare technology background"
         fill
         className="absolute inset-0 -z-10 object-cover opacity-20"
-        data-ai-hint="abstract background"
+        data-ai-hint="healthcare technology"
       />
       <header className="p-4 sm:p-6">
         <Logo />
