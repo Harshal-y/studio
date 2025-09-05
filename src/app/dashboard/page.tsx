@@ -25,10 +25,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import Image from 'next/image';
 
 export default function DashboardPage() {
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex min-h-screen w-full bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
           <Link
@@ -94,7 +95,7 @@ export default function DashboardPage() {
           </TooltipProvider>
         </nav>
       </aside>
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14 flex-1">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:static sm:h-auto sm:justify-end sm:border-0 sm:bg-transparent sm:px-6">
           <Sheet>
             <SheetTrigger asChild>
@@ -137,23 +138,21 @@ export default function DashboardPage() {
               </nav>
             </SheetContent>
           </Sheet>
-          <div className="hidden sm:block">
-            <Logo />
+          <div className="relative flex-1 md:grow-0">
+            {/* You can add a search bar here if needed */}
           </div>
           <Avatar>
             <AvatarImage
               src="https://picsum.photos/100/100"
               alt="User"
               data-ai-hint="person face"
-              width={100}
-              height={100}
             />
             <AvatarFallback>
               <User />
             </AvatarFallback>
           </Avatar>
         </header>
-        <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           <Dashboard />
         </main>
       </div>
