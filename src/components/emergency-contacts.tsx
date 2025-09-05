@@ -24,8 +24,11 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from '@/hooks/use-location';
 import { emergencyContacts, vitals } from '@/data/mock-data';
+import { useState } from 'react';
+import { EmergencyAlertDialog } from './emergency-alert-dialog';
 
 export function EmergencyContacts() {
+  const [isManualAlert, setIsManualAlert] = useState(false);
   const { toast } = useToast();
   const { location, error: locationError } = useLocation();
 
@@ -49,54 +52,51 @@ export function EmergencyContacts() {
       title: 'Emergency Alert Sent',
       description: `Alert sent to emergency contacts with vitals (${vitalsSummary}) ${locationInfo}`,
     });
+    setIsManualAlert(false);
   };
 
+
   return (
-    <Card className="flex-1 backdrop-blur-sm bg-background/60 dark:bg-black/60">
-      <CardHeader>
-        <CardTitle>Emergency</CardTitle>
-        <CardDescription>
-          Alert your contacts in case of an emergency.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {emergencyContacts.map((contact) => (
-          <div key={contact.id} className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-muted">
-              <User className="size-5 text-muted-foreground" />
+    <>
+      <EmergencyAlertDialog
+        open={isManualAlert}
+        onOpenChange={setIsManualAlert}
+        onAlertSent={handleSendAlert}
+        onAlertCancelled={() => setIsManualAlert(false)}
+        criticalVital={null}
+        isManualTrigger={true}
+      />
+      <Card className="flex-1 backdrop-blur-sm bg-background/60 dark:bg-black/60">
+        <CardHeader>
+          <CardTitle>Emergency</CardTitle>
+          <CardDescription>
+            Alert your contacts in case of an emergency.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          {emergencyContacts.map((contact) => (
+            <div key={contact.id} className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-muted">
+                <User className="size-5 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="font-medium">{contact.name}</p>
+                <p className="text-sm text-muted-foreground">{contact.phone}</p>
+              </div>
             </div>
-            <div>
-              <p className="font-medium">{contact.name}</p>
-              <p className="text-sm text-muted-foreground">{contact.phone}</p>
-            </div>
-          </div>
-        ))}
-      </CardContent>
-      <CardFooter>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" className="w-full">
-              <Siren className="mr-2 h-4 w-4" />
-              Send Emergency Alert
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will send an emergency alert with your current vitals and
-                location to your emergency contacts.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleSendAlert}>
-                Confirm & Send
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </CardFooter>
-    </Card>
+          ))}
+        </CardContent>
+        <CardFooter>
+          <Button
+            variant="destructive"
+            className="w-full"
+            onClick={() => setIsManualAlert(true)}
+          >
+            <Siren className="mr-2 h-4 w-4" />
+            Send Emergency Alert
+          </Button>
+        </CardFooter>
+      </Card>
+    </>
   );
 }

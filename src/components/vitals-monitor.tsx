@@ -17,6 +17,7 @@ import {
   Waves,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { EmergencyAlertDialog } from './emergency-alert-dialog';
 
 type Vital = {
   value: number;
@@ -55,32 +56,8 @@ const nameMap: Record<keyof VitalsState, string> = {
 
 export function VitalsMonitor() {
   const [vitals, setVitals] = useState<VitalsState>(initialVitals);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVitals((prevVitals) => {
-        const newVitals = { ...prevVitals };
-        (Object.keys(newVitals) as Array<keyof VitalsState>).forEach((key) => {
-          const vital = newVitals[key];
-          let newValue =
-            vital.value +
-            (Math.random() - 0.4) *
-              (key === 'heartRate' ? 2 : key === 'bodyTemperature' ? 0.2 : 0.5);
-
-          if (key === 'heartRate') newValue = Math.round(newValue);
-          else newValue = parseFloat(newValue.toFixed(1));
-
-          if (newValue < 40) newValue = 40;
-          if (newValue > 180 && key === 'heartRate') newValue = 180;
-          if (newValue > 100 && key === 'oxygenSaturation') newValue = 100;
-
-          newVitals[key] = { ...vital, value: newValue };
-        });
-        return newVitals;
-      });
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+  const [isEmergency, setIsEmergency] = useState(false);
+  const [criticalVital, setCriticalVital] = useState<string | null>(null);
 
   const getStatus = (
     value: number,
@@ -96,6 +73,47 @@ export function VitalsMonitor() {
     }
     return 'normal';
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVitals((prevVitals) => {
+        const newVitals = { ...prevVitals };
+        let criticalConditionDetected = false;
+        let vitalInDanger: string | null = null;
+
+        (Object.keys(newVitals) as Array<keyof VitalsState>).forEach((key) => {
+          const vital = newVitals[key];
+          let newValue =
+            vital.value +
+            (Math.random() - 0.4) *
+              (key === 'heartRate' ? 2 : key === 'bodyTemperature' ? 0.2 : 0.5);
+
+          if (key === 'heartRate') newValue = Math.round(newValue);
+          else newValue = parseFloat(newValue.toFixed(1));
+          
+          if (newValue < 40) newValue = 40;
+          if (newValue > 180 && key === 'heartRate') newValue = 180;
+          if (newValue > 100 && key === 'oxygenSaturation') newValue = 100;
+
+          newVitals[key] = { ...vital, value: newValue };
+
+          const status = getStatus(newValue, vital.thresholds, vital.direction);
+          if (status === 'danger') {
+            criticalConditionDetected = true;
+            vitalInDanger = `${nameMap[key]} is ${newValue}${vital.unit}`;
+          }
+        });
+
+        if (criticalConditionDetected && !isEmergency) {
+          setIsEmergency(true);
+          setCriticalVital(vitalInDanger);
+        }
+
+        return newVitals;
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isEmergency]);
 
   const statusClasses = {
     normal: 'text-green-400',
@@ -146,21 +164,40 @@ export function VitalsMonitor() {
     );
   };
 
+  const onAlertSent = () => {
+    setIsEmergency(false);
+    setCriticalVital(null);
+  }
+
+  const onAlertCancelled = () => {
+    setIsEmergency(false);
+    setCriticalVital(null);
+  }
+
   return (
-    <Card className="backdrop-blur-sm bg-background/60 dark:bg-black/60">
-      <CardHeader>
-        <CardTitle>Live Vitals</CardTitle>
-        <CardDescription>
-          Real-time data from your connected devices.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {Object.keys(vitals).map((key) =>
-            renderVital(key as keyof VitalsState)
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <EmergencyAlertDialog
+        open={isEmergency}
+        onOpenChange={setIsEmergency}
+        onAlertSent={onAlertSent}
+        onAlertCancelled={onAlertCancelled}
+        criticalVital={criticalVital}
+      />
+      <Card className="backdrop-blur-sm bg-background/60 dark:bg-black/60">
+        <CardHeader>
+          <CardTitle>Live Vitals</CardTitle>
+          <CardDescription>
+            Real-time data from your connected devices.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {Object.keys(vitals).map((key) =>
+              renderVital(key as keyof VitalsState)
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </>
   );
 }
