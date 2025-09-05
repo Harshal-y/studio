@@ -3,9 +3,9 @@ export const historicalData = Array.from({ length: 7 }, (_, i) => {
   date.setDate(date.getDate() - (6 - i));
   return {
     date: date.toISOString().slice(0, 10),
-    heartRate: Math.floor(Math.random() * 20) + 65, // 65-85 bpm
-    oxygenSaturation: parseFloat((96 + Math.random() * 3).toFixed(1)), // 96-99%
-    bodyTemperature: parseFloat((36.5 + Math.random() * 1).toFixed(1)), // 36.5-37.5 °C
+    heartRate: Math.floor(Math.random() * 10) + 70, // 70-80 bpm
+    oxygenSaturation: parseFloat((97 + Math.random() * 2).toFixed(1)), // 97-99%
+    bodyTemperature: parseFloat((36.5 + Math.random() * 0.5).toFixed(1)), // 36.5-37.0 °C
   };
 });
 

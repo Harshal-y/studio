@@ -85,17 +85,22 @@ export function VitalsMonitor() {
 
         (Object.keys(newVitals) as Array<keyof VitalsState>).forEach((key) => {
           const vital = newVitals[key];
-          let newValue =
-            vital.value +
-            (Math.random() - 0.4) *
-              (key === 'heartRate' ? 2 : key === 'bodyTemperature' ? 0.2 : 0.5);
+          // Reduced the fluctuation range to make it more stable
+          const fluctuation = (Math.random() - 0.5) * (key === 'heartRate' ? 1 : 0.1);
 
-          if (key === 'heartRate') newValue = Math.round(newValue);
-          else newValue = parseFloat(newValue.toFixed(1));
+          let newValue = vital.value + fluctuation;
+
+          // Clamp values to realistic ranges
+          if (key === 'heartRate') {
+            newValue = Math.max(50, Math.min(130, Math.round(newValue)));
+          } else if (key === 'oxygenSaturation') {
+            newValue = Math.max(90, Math.min(100, parseFloat(newValue.toFixed(1))));
+          } else if (key === 'bodyTemperature') {
+            newValue = Math.max(36.0, Math.min(39.5, parseFloat(newValue.toFixed(1))));
+          } else if (key === 'hydrationLevel') {
+            newValue = Math.max(70, Math.min(100, parseFloat(newValue.toFixed(1))));
+          }
           
-          if (newValue < 40) newValue = 40;
-          if (newValue > 180 && key === 'heartRate') newValue = 180;
-          if (newValue > 100 && key === 'oxygenSaturation') newValue = 100;
 
           const oldStatus = getStatus(vital.value, vital.thresholds, vital.direction);
           const newStatus = getStatus(newValue, vital.thresholds, vital.direction);
