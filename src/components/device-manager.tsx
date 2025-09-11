@@ -18,14 +18,12 @@ export function DeviceManager() {
 
   const getDeviceIcon = (type: string) => {
     switch (type) {
-      case 'Smartwatch':
-        return <Watch className="size-6 text-muted-foreground" />;
-      case 'Heart Monitor':
-        return <MonitorSmartphone className="size-6 text-muted-foreground" />;
-      case 'Wristband':
+      case 'Watch':
         return <Watch className="size-6 text-muted-foreground" />;
       case 'Chain':
         return <Link2 className="size-6 text-muted-foreground" />;
+      case 'Mobile':
+        return <MonitorSmartphone className="size-6 text-muted-foreground" />;
       default:
         return <Watch className="size-6 text-muted-foreground" />;
     }
@@ -35,7 +33,7 @@ export function DeviceManager() {
     <Card className="flex-1 backdrop-blur-sm bg-background/60 dark:bg-black/60">
       <CardHeader>
         <CardTitle>Device Management</CardTitle>
-        <CardDescription>Monitor your connected devices</CardDescription>
+        <CardDescription>Connect your Bluetooth devices</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         {devices.map((device) => (

@@ -3,7 +3,7 @@ export const historicalData = Array.from({ length: 7 }, (_, i) => {
   date.setDate(date.getDate() - (6 - i));
   return {
     date: date.toISOString().slice(0, 10),
-    heartRate: Math.floor(Math.random() * 10) + 70, // 70-80 bpm
+    heartRate: Math.floor(Math.random() * 10) + 65, // 65-75 bpm
     oxygenSaturation: parseFloat((97 + Math.random() * 2).toFixed(1)), // 97-99%
     bodyTemperature: parseFloat((36.5 + Math.random() * 0.5).toFixed(1)), // 36.5-37.0 °C
   };
@@ -12,30 +12,23 @@ export const historicalData = Array.from({ length: 7 }, (_, i) => {
 export const devices = [
   {
     id: 1,
-    name: 'CardioWatch 5',
-    type: 'Smartwatch',
+    name: 'Smartwatch',
+    type: 'Watch',
     batteryLevel: 82,
     status: 'Connected',
   },
   {
     id: 2,
-    name: 'Respira-Monitor',
-    type: 'Heart Monitor',
-    batteryLevel: 55,
+    name: 'Health Chain',
+    type: 'Chain',
+    batteryLevel: 75,
     status: 'Connected',
   },
   {
     id: 3,
-    name: 'FitBand Pro',
-    type: 'Wristband',
+    name: 'User\'s Phone',
+    type: 'Mobile',
     batteryLevel: 91,
-    status: 'Connected',
-  },
-  {
-    id: 4,
-    name: 'HealthChain',
-    type: 'Chain',
-    batteryLevel: 75,
     status: 'Connected',
   },
 ];
