@@ -24,13 +24,6 @@ export const devices = [
     batteryLevel: 75,
     status: 'Connected',
   },
-  {
-    id: 3,
-    name: 'User\'s Phone',
-    type: 'Mobile',
-    batteryLevel: 91,
-    status: 'Connected',
-  },
 ];
 
 export const emergencyContacts = [

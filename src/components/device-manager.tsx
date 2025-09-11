@@ -22,8 +22,6 @@ export function DeviceManager() {
         return <Watch className="size-6 text-muted-foreground" />;
       case 'Chain':
         return <Link2 className="size-6 text-muted-foreground" />;
-      case 'Mobile':
-        return <MonitorSmartphone className="size-6 text-muted-foreground" />;
       default:
         return <Watch className="size-6 text-muted-foreground" />;
     }
