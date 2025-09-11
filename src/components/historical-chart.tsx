@@ -14,7 +14,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart';
-import { historicalData } from '@/data/mock-data';
+import { useData } from '@/contexts/data-provider';
 import { History } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
@@ -44,12 +44,13 @@ const chartConfig = {
 
 export function HistoricalChart() {
   const [isClient, setIsClient] = useState(false);
+  const { historicalData, isConnected } = useData();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  if (!isClient) {
+  if (!isClient || !isConnected || !historicalData) {
     return (
       <Card className="backdrop-blur-sm bg-background/60 dark:bg-black/60">
         <CardHeader>

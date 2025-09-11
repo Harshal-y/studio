@@ -9,9 +9,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { devices } from '@/data/mock-data';
+import { useData } from '@/contexts/data-provider';
+import { Switch } from './ui/switch';
+import { Label } from './ui/label';
 
 export function DeviceManager() {
+  const { devices, toggleDeviceConnection } = useData();
+
   const getDeviceIcon = (type: string) => {
     switch (type) {
       case 'Smartwatch':
@@ -33,33 +37,32 @@ export function DeviceManager() {
         <CardTitle>Device Management</CardTitle>
         <CardDescription>Monitor your connected devices</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-6">
         {devices.map((device) => (
           <div key={device.id} className="flex items-center gap-4">
             {getDeviceIcon(device.type)}
             <div className="flex-1">
               <p className="font-medium">{device.name}</p>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>
-                  {device.status === 'Connected' ? 'Connected' : 'Disconnected'}
-                </span>
-                <span
-                  className={`size-2 rounded-full ${
-                    device.status === 'Connected'
-                      ? 'bg-green-500'
-                      : 'bg-destructive'
-                  }`}
-                />
+                <p>{device.status}</p>
               </div>
             </div>
-            <div className="w-24">
-              <Progress
-                value={device.batteryLevel}
-                aria-label={`${device.batteryLevel}% battery`}
+            <div className="flex items-center gap-4">
+              <div className="w-24">
+                <Progress
+                  value={device.batteryLevel}
+                  aria-label={`${device.batteryLevel}% battery`}
+                />
+                <p className="text-xs text-center text-muted-foreground mt-1">
+                  {device.batteryLevel}%
+                </p>
+              </div>
+              <Switch
+                id={`device-toggle-${device.id}`}
+                checked={device.status === 'Connected'}
+                onCheckedChange={() => toggleDeviceConnection(device.id)}
+                aria-label={`Toggle connection for ${device.name}`}
               />
-              <p className="text-xs text-center text-muted-foreground mt-1">
-                {device.batteryLevel}%
-              </p>
             </div>
           </div>
         ))}

@@ -1,7 +1,8 @@
 'use client';
 
 import { generatePersonalizedHealthInsights } from '@/ai/flows/generate-personalized-health-insights';
-import { historicalData, userPreferences } from '@/data/mock-data';
+import { useData } from '@/contexts/data-provider';
+import { userPreferences } from '@/data/mock-data';
 import { Bot, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
@@ -16,11 +17,16 @@ import {
 import { Skeleton } from './ui/skeleton';
 
 export function HealthInsights() {
+  const { historicalData } = useData();
   const [insights, setInsights] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerateInsights = async () => {
+    if (!historicalData) {
+      setError('No data available to generate insights.');
+      return;
+    }
     setLoading(true);
     setError(null);
     setInsights(null);
@@ -75,7 +81,7 @@ export function HealthInsights() {
       <CardFooter>
         <Button
           onClick={handleGenerateInsights}
-          disabled={loading}
+          disabled={loading || !historicalData}
           className="w-full"
         >
           <Sparkles className="mr-2 h-4 w-4" />

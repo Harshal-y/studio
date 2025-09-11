@@ -1,7 +1,7 @@
 'use client';
 
 import { generateHealthTrendSummaries } from '@/ai/flows/generate-health-trend-summaries';
-import { historicalData } from '@/data/mock-data';
+import { useData } from '@/contexts/data-provider';
 import { LineChart, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
@@ -16,11 +16,16 @@ import {
 import { Skeleton } from './ui/skeleton';
 
 export function TrendAnalysis() {
+  const { historicalData } = useData();
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerateSummary = async () => {
+    if (!historicalData) {
+      setError('No data available to generate summary.');
+      return;
+    }
     setLoading(true);
     setError(null);
     setSummary(null);
@@ -74,7 +79,7 @@ export function TrendAnalysis() {
       <CardFooter>
         <Button
           onClick={handleGenerateSummary}
-          disabled={loading}
+          disabled={loading || !historicalData}
           className="w-full"
         >
           <Sparkles className="mr-2 h-4 w-4" />
