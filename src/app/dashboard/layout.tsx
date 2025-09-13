@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   Activity,
   Bot,
+  Copy,
   HeartPulse,
   History,
   Menu,
@@ -38,14 +39,26 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { AddFamilyMemberDialog } from '@/components/add-family-member-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 function ProfileSwitcher() {
   const { currentUser, setCurrentUser, familyMembers, selfUser } = useData();
   const [isAddFamilyDialogOpen, setIsAddFamilyDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   if (!currentUser) return null;
 
   const otherFamilyMembers = familyMembers.filter(m => m.id !== selfUser?.id);
+
+  const copyToClipboard = () => {
+    if (currentUser?.deviceCode) {
+      navigator.clipboard.writeText(currentUser.deviceCode);
+      toast({
+        title: 'Copied!',
+        description: 'Device code copied to clipboard.',
+      });
+    }
+  };
 
   return (
     <>
@@ -65,7 +78,7 @@ function ProfileSwitcher() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-64" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
@@ -76,6 +89,20 @@ function ProfileSwitcher() {
             </p>
           </div>
         </DropdownMenuLabel>
+
+        {currentUser.id === selfUser?.id && selfUser?.deviceCode && (
+           <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Your Device Code</DropdownMenuLabel>
+             <div className="flex items-center justify-between px-2 py-1.5 text-xs text-muted-foreground">
+                <span>{selfUser.deviceCode}</span>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyToClipboard}>
+                    <Copy className="h-3 w-3" />
+                </Button>
+            </div>
+           </>
+        )}
+
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Users</DropdownMenuLabel>
         <DropdownMenuItem

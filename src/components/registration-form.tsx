@@ -75,14 +75,19 @@ export function RegistrationForm() {
     
     toast({
       title: 'Registration Successful!',
-      description: `Your device code is ${deviceCode}. Share it with family to connect. You are now being redirected to your dashboard.`,
-      duration: 9000,
+      description: `You are now being redirected to your dashboard.`,
+      duration: 5000,
     });
     
     // Redirect to dashboard after a short delay
     setTimeout(() => {
+      // We'll use localStorage to pass the device code to the dashboard
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('deviceCode', deviceCode);
+        localStorage.setItem('newUser', JSON.stringify(values));
+      }
       router.push('/dashboard');
-    }, 5000);
+    }, 3000);
   }
 
   return (

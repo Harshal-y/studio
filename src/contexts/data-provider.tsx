@@ -1,7 +1,7 @@
 
 'use client';
 
-import { allFamilyMembers, selfUser } from '@/data/mock-data';
+import { allFamilyMembers, selfUser as defaultSelfUser } from '@/data/mock-data';
 import { VitalsState } from '@/components/vitals-monitor';
 import React, {
   createContext,
@@ -55,13 +55,41 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User | null>(selfUser);
-  const [familyMembers, setFamilyMembers] = useState<User[]>([selfUser]);
+  const [selfUser, setSelfUser] = useState<User | null>(defaultSelfUser);
+  const [currentUser, setCurrentUser] = useState<User | null>(defaultSelfUser);
+  const [familyMembers, setFamilyMembers] = useState<User[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
   const [vitals, setVitals] = useState<VitalsState | null>(null);
   const [historicalData, setHistoricalData] = useState<HistoricalData[] | null>(
     null
   );
+
+   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const deviceCode = localStorage.getItem('deviceCode');
+      const newUserRaw = localStorage.getItem('newUser');
+      
+      if (deviceCode && newUserRaw && selfUser) {
+        const newUserDetails = JSON.parse(newUserRaw);
+        const updatedSelfUser = {
+          ...selfUser,
+          name: newUserDetails.name,
+          email: newUserDetails.email,
+          deviceCode: deviceCode,
+        };
+        setSelfUser(updatedSelfUser);
+        setCurrentUser(updatedSelfUser);
+        
+        // Clean up localStorage
+        localStorage.removeItem('deviceCode');
+        localStorage.removeItem('newUser');
+      }
+    }
+    // Initialize family members with selfUser
+    if(selfUser) {
+      setFamilyMembers([selfUser]);
+    }
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
