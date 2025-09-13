@@ -43,9 +43,22 @@ const formSchema = z.object({
   email: z.string().email({
     message: 'Please enter a valid email address.',
   }),
-  dob: z.date({
-    required_error: 'A date of birth is required.',
-  }),
+  dob: z
+    .date({
+      required_error: 'A date of birth is required.',
+    })
+    .refine(
+      (date) => {
+        const today = new Date();
+        const sixteenYearsAgo = new Date(
+          today.getFullYear() - 16,
+          today.getMonth(),
+          today.getDate()
+        );
+        return date <= sixteenYearsAgo;
+      },
+      { message: 'You must be at least 16 years old.' }
+    ),
   bloodGroup: z.string({
     required_error: 'Please select a blood group.',
   }),
