@@ -9,6 +9,7 @@ import {
   History,
   Menu,
   PanelLeft,
+  PlusCircle,
   Settings,
   Users,
 } from 'lucide-react';
@@ -35,14 +36,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { familyMembers } from '@/data/mock-data';
+import { useState } from 'react';
+import { AddFamilyMemberDialog } from '@/components/add-family-member-dialog';
 
 function ProfileSwitcher() {
-  const { currentUser, setCurrentUser } = useData();
+  const { currentUser, setCurrentUser, familyMembers } = useData();
+  const [isAddFamilyDialogOpen, setIsAddFamilyDialogOpen] = useState(false);
 
   if (!currentUser) return null;
 
   return (
+    <>
+    <AddFamilyMemberDialog open={isAddFamilyDialogOpen} onOpenChange={setIsAddFamilyDialogOpen} />
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -80,8 +85,14 @@ function ProfileSwitcher() {
             {member.name}
           </DropdownMenuItem>
         ))}
+         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => setIsAddFamilyDialogOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Family Member
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    </>
   );
 }
 

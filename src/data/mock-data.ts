@@ -1,4 +1,6 @@
 
+import type { User } from '@/contexts/data-provider';
+
 const generateHistoricalData = () =>
   Array.from({ length: 7 }, (_, i) => {
     const date = new Date();
@@ -38,7 +40,7 @@ const baseVitals = {
   },
 };
 
-const selfUser = {
+export const selfUser: User = {
   id: 1,
   name: 'John Doe',
   email: 'john.doe@email.com',
@@ -63,13 +65,14 @@ const selfUser = {
   historicalData: generateHistoricalData(),
 };
 
-export const familyMembers = [
+export const allFamilyMembers: User[] = [
   selfUser,
   {
     id: 2,
     name: 'Jane Doe',
     email: 'jane.doe@email.com',
     avatar: 'https://picsum.photos/seed/2/100/100',
+    deviceCode: 'JANE-456',
     devices: [
       {
         id: 3,
@@ -90,6 +93,7 @@ export const familyMembers = [
     name: 'Junior Doe',
     email: 'junior.doe@email.com',
     avatar: 'https://picsum.photos/seed/3/100/100',
+    deviceCode: 'JUNIOR-123',
     devices: [
        {
         id: 4,
@@ -109,11 +113,6 @@ export const familyMembers = [
 ];
 
 
-export const users = {
-  self: selfUser,
-  family: familyMembers,
-};
-
 export const emergencyContacts = [
   { id: 1, name: 'Dr. Evelyn Reed', phone: '(555) 123-4567' },
   { id: 2, name: 'Alex Miller', phone: '(555) 987-6543' },
@@ -126,3 +125,12 @@ export const userPreferences =
 export const devices = selfUser.devices;
 export const vitals = selfUser.vitals;
 export const historicalData = selfUser.historicalData;
+
+// Deprecated: use allFamilyMembers and selfUser
+export const users = {
+  self: selfUser,
+  family: allFamilyMembers,
+};
+
+// Deprecated: use allFamilyMembers
+export const familyMembers = allFamilyMembers;

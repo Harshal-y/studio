@@ -1,10 +1,7 @@
 
 'use client';
 
-import {
-  users,
-  familyMembers
-} from '@/data/mock-data';
+import { allFamilyMembers, selfUser } from '@/data/mock-data';
 import { VitalsState } from '@/components/vitals-monitor';
 import React, {
   createContext,
@@ -30,11 +27,12 @@ type HistoricalData = {
   bodyTemperature: number;
 };
 
-type User = {
+export type User = {
   id: number;
   name: string;
   email: string;
   avatar: string;
+  deviceCode?: string;
   devices: Device[];
   vitals: VitalsState;
   historicalData: HistoricalData[];
@@ -43,6 +41,8 @@ type User = {
 interface DataContextType {
   currentUser: User | null;
   setCurrentUser: (user: User) => void;
+  familyMembers: User[];
+  addFamilyMember: (member: User) => void;
   devices: Device[];
   vitals: VitalsState | null;
   historicalData: HistoricalData[] | null;
@@ -54,7 +54,8 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User | null>(users.self);
+  const [currentUser, setCurrentUser] = useState<User | null>(selfUser);
+  const [familyMembers, setFamilyMembers] = useState<User[]>([selfUser]);
   const [devices, setDevices] = useState<Device[]>([]);
   const [vitals, setVitals] = useState<VitalsState | null>(null);
   const [historicalData, setHistoricalData] = useState<HistoricalData[] | null>(
@@ -63,11 +64,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (currentUser) {
+      // Set devices for the current user, initially all disconnected
       const initialDevices = currentUser.devices.map((d) => ({
         ...d,
         status: 'Disconnected' as 'Disconnected',
       }));
       setDevices(initialDevices);
+       // When user switches, disconnect all devices
+      setVitals(null);
+      setHistoricalData(null);
     }
   }, [currentUser]);
 
@@ -100,10 +105,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
       )
     );
   };
+  
+  const addFamilyMember = (member: User) => {
+    if (!familyMembers.some(m => m.id === member.id)) {
+      setFamilyMembers(prev => [...prev, member]);
+    }
+  };
 
   const value = {
     currentUser,
     setCurrentUser,
+    familyMembers,
+    addFamilyMember,
     devices,
     vitals,
     historicalData,
