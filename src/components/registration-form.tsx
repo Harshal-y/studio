@@ -90,7 +90,7 @@ function DateOfBirthPicker({
 
   const currentYear = new Date().getFullYear();
   const startYear = 1900;
-  const endYear = currentYear - 16;
+  const endYear = currentYear;
 
   const years = Array.from({ length: endYear - startYear + 1 }, (_, i) =>
     String(startYear + i)
