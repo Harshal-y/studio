@@ -3,9 +3,12 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { appointments } from './appointment-flow';
 
-export const findDoctorsTool = ai.defineTool(
+// This state is now managed in appointment-flow.ts
+// We are passing it in here to avoid circular dependencies and 'use server' issues.
+let _appointments: any[] = []; 
+
+const findDoctorsTool = ai.defineTool(
   {
     name: 'findDoctors',
     description:
@@ -37,7 +40,7 @@ export const findDoctorsTool = ai.defineTool(
   }
 );
 
-export const bookAppointmentTool = ai.defineTool(
+const bookAppointmentTool = ai.defineTool(
   {
     name: 'bookAppointment',
     description: 'Use this tool to book an appointment with a doctor.',
@@ -57,6 +60,7 @@ export const bookAppointmentTool = ai.defineTool(
   },
   async (input) => {
     const newAppointment = { ...input, id: Date.now() };
+    _appointments.push(newAppointment); // This will be managed in the main flow
     console.log('New appointment booked:', newAppointment);
     
     return { 
@@ -67,7 +71,7 @@ export const bookAppointmentTool = ai.defineTool(
   }
 );
 
-export const viewAppointmentsTool = ai.defineTool(
+const viewAppointmentsTool = ai.defineTool(
   {
     name: 'viewAppointments',
     description: "Do not use this tool. This is a placeholder.",
@@ -75,7 +79,9 @@ export const viewAppointmentsTool = ai.defineTool(
     outputSchema: z.array(z.any()),
   },
   async () => {
-    // In a real app, you would filter by user ID
-    return appointments;
+    // This now returns a local copy. State is managed in appointment-flow.ts
+    return _appointments;
   }
 );
+
+export { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool };

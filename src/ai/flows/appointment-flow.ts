@@ -12,7 +12,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool } from './appointment-tool';
 
-export let appointments: { id: number, doctorId: number, doctorName: string, date: string, time: string, patientName: string, issue: string }[] = [];
+let appointments: { id: number, doctorId: number, doctorName: string, date: string, time: string, patientName: string, issue: string }[] = [];
 
 
 const AppointmentFlowInputSchema = z.object({
