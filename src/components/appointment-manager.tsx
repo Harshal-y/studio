@@ -35,7 +35,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
-  appointmentFlow,
   bookAppointment,
   viewAppointments,
 } from '@/ai/flows/appointment-flow';
@@ -46,6 +45,9 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
+import { ScrollArea, ScrollBar } from './ui/scroll-area';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Label } from './ui/label';
 
 interface AppointmentManagerProps {
   open: boolean;
@@ -327,23 +329,39 @@ export function AppointmentManager({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Time</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a time slot" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {timeSlots.map((time) => (
-                              <SelectItem key={time} value={time}>
-                                {time}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <ScrollArea className="w-full whitespace-nowrap rounded-md border">
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              className="flex p-2"
+                            >
+                              {timeSlots.map((time) => (
+                                <FormItem
+                                  key={time}
+                                  className="flex items-center space-x-2 space-y-0"
+                                >
+                                  <FormControl>
+                                    <RadioGroupItem value={time} id={time} className="sr-only" />
+                                  </FormControl>
+                                   <Label
+                                    htmlFor={time}
+                                    className={cn(
+                                      'flex h-9 items-center justify-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
+                                      'cursor-pointer',
+                                      field.value === time
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-transparent'
+                                    )}
+                                  >
+                                    {time}
+                                  </Label>
+                                </FormItem>
+                              ))}
+                            </RadioGroup>
+                             <ScrollBar orientation="horizontal" />
+                          </ScrollArea>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
