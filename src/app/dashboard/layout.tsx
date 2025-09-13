@@ -40,10 +40,12 @@ import { useState } from 'react';
 import { AddFamilyMemberDialog } from '@/components/add-family-member-dialog';
 
 function ProfileSwitcher() {
-  const { currentUser, setCurrentUser, familyMembers } = useData();
+  const { currentUser, setCurrentUser, familyMembers, selfUser } = useData();
   const [isAddFamilyDialogOpen, setIsAddFamilyDialogOpen] = useState(false);
 
   if (!currentUser) return null;
+
+  const otherFamilyMembers = familyMembers.filter(m => m.id !== selfUser?.id);
 
   return (
     <>
@@ -75,16 +77,29 @@ function ProfileSwitcher() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>Family Members</DropdownMenuLabel>
-        {familyMembers.map((member) => (
-          <DropdownMenuItem
-            key={member.id}
-            onClick={() => setCurrentUser(member)}
-            disabled={member.id === currentUser.id}
-          >
-            {member.name}
-          </DropdownMenuItem>
-        ))}
+        <DropdownMenuLabel>Users</DropdownMenuLabel>
+        <DropdownMenuItem
+          onClick={() => selfUser && setCurrentUser(selfUser)}
+          disabled={currentUser.id === selfUser?.id}
+        >
+          {selfUser?.name}
+        </DropdownMenuItem>
+
+        {otherFamilyMembers.length > 0 && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Family Members</DropdownMenuLabel>
+            {otherFamilyMembers.map((member) => (
+              <DropdownMenuItem
+                key={member.id}
+                onClick={() => setCurrentUser(member)}
+                disabled={member.id === currentUser.id}
+              >
+                {member.name}
+              </DropdownMenuItem>
+            ))}
+          </>
+        )}
          <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setIsAddFamilyDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />

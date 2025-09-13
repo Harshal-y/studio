@@ -40,6 +40,7 @@ export type User = {
 
 interface DataContextType {
   currentUser: User | null;
+  selfUser: User | null;
   setCurrentUser: (user: User) => void;
   familyMembers: User[];
   addFamilyMember: (member: User) => void;
@@ -114,6 +115,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const value = {
     currentUser,
+    selfUser,
     setCurrentUser,
     familyMembers,
     addFamilyMember,
