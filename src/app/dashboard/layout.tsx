@@ -57,6 +57,9 @@ function ProfileSwitcher() {
       });
     }
   };
+  
+  const otherFamilyMembers = familyMembers.filter(m => m.id !== selfUser?.id);
+
 
   return (
     <>
@@ -88,7 +91,7 @@ function ProfileSwitcher() {
           </div>
         </DropdownMenuLabel>
 
-        {currentUser.id === selfUser?.id && selfUser?.deviceCode && (
+        {selfUser?.deviceCode && (
            <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel>Your Device Code</DropdownMenuLabel>
@@ -102,16 +105,32 @@ function ProfileSwitcher() {
         )}
 
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>Switch Profile</DropdownMenuLabel>
-        {familyMembers.map((member) => (
+        
+        {selfUser && (
             <DropdownMenuItem
-            key={member.id}
-            onClick={() => setCurrentUser(member)}
-            disabled={member.id === currentUser.id}
+            onClick={() => setCurrentUser(selfUser)}
+            disabled={selfUser.id === currentUser.id}
             >
-            {member.name}
+            {selfUser.name} (You)
             </DropdownMenuItem>
-        ))}
+        )}
+
+        {otherFamilyMembers.length > 0 && (
+            <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Family Members</DropdownMenuLabel>
+                {otherFamilyMembers.map((member) => (
+                    <DropdownMenuItem
+                    key={member.id}
+                    onClick={() => setCurrentUser(member)}
+                    disabled={member.id === currentUser.id}
+                    >
+                    {member.name}
+                    </DropdownMenuItem>
+                ))}
+            </>
+        )}
+
 
          <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setIsAddFamilyDialogOpen(true)}>
@@ -277,3 +296,5 @@ export default function DashboardLayout({
     </DataProvider>
   );
 }
+
+    
