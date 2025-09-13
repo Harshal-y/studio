@@ -83,10 +83,13 @@ function DateOfBirthPicker({
       const monthNum = parseInt(month, 10);
       const yearNum = parseInt(year, 10);
       if (!isNaN(dayNum) && !isNaN(monthNum) && !isNaN(yearNum)) {
-        onChange(new Date(yearNum, monthNum, dayNum));
+        const newDate = new Date(yearNum, monthNum, dayNum);
+        if (value?.getTime() !== newDate.getTime()) {
+          onChange(newDate);
+        }
       }
     }
-  }, [day, month, year, onChange]);
+  }, [day, month, year, onChange, value]);
 
   const currentYear = new Date().getFullYear();
   const startYear = 1900;
