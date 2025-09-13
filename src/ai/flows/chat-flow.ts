@@ -12,7 +12,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const ChatInputSchema = z.object({
-  prompt: z.string().describe("The user\'s message to the chatbot."),
+  prompt: z.string().describe("The user's message to the chatbot."),
   history: z
     .array(z.object({role: z.enum(['user', 'model']), content: z.string()}))
     .optional()
@@ -21,7 +21,7 @@ const ChatInputSchema = z.object({
 export type ChatInput = z.infer<typeof ChatInputSchema>;
 
 const ChatOutputSchema = z.object({
-  response: z.string().describe("The chatbot\'s response to the user."),
+  response: z.string().describe("The chatbot's response to the user."),
 });
 export type ChatOutput = z.infer<typeof ChatOutputSchema>;
 
@@ -33,11 +33,11 @@ const prompt = ai.definePrompt({
   name: 'chatPrompt',
   input: {schema: ChatInputSchema},
   output: {schema: ChatOutputSchema},
-  prompt: `You are a friendly and helpful AI assistant for the TrackWell health monitoring app.
+  prompt: `You are a friendly and helpful AI assistant for the TrackWell health monitoring app. Your goal is to have a natural, helpful conversation with the user.
 
-Your goal is to answer user questions about their health data, the app's features, or general health topics.
+You can answer questions about the app's features or discuss general health and wellness topics in a conversational way.
 
-Use the provided conversation history to maintain context.
+IMPORTANT: You are an AI assistant, not a medical professional. You MUST NOT provide any medical advice, diagnosis, or recommend any specific medicine or medication. If the user asks for medical advice or mentions specific medications, you MUST decline and advise them to consult a qualified doctor or healthcare provider.
 
 Do not answer questions about booking, viewing, or managing appointments. Instead, instruct the user to use the "Appointment Manager" button.
 
