@@ -45,6 +45,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AIChatBot } from '@/components/ai-chat-bot';
 import { BookAppointmentDialog } from '@/components/book-appointment-dialog';
 import { useRouter } from 'next/navigation';
+import { FindDoctorChatbot } from '@/components/find-doctor-chatbot';
 
 
 function ProfileSwitcher() {
@@ -332,6 +333,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           {children}
         </main>
         <AIChatBot />
+        <FindDoctorChatbot />
       </div>
     </div>
     </>
