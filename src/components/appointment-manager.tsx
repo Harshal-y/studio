@@ -105,16 +105,27 @@ export function AppointmentManager({
         doctors: verifiedDoctors,
       });
 
-      const toolResponse = JSON.parse(result.response);
+      const toolResponses = result.response.split('\n').filter(r => r.startsWith('{"tool_code"'));
       
-      toast({
-          title: 'AI Recommendation',
-          description: toolResponse.recommendation
-      });
-
-      if (toolResponse.recommendedDoctorId) {
-        form.setValue('doctorId', String(toolResponse.recommendedDoctorId));
+      if(toolResponses.length > 0) {
+        const toolResponseJson = toolResponses[0].replace('{"tool_code":"', '').replace('"}','');
+        const toolResponse = JSON.parse(JSON.parse(toolResponseJson).tool_code);
+        
+        toast({
+            title: 'AI Recommendation',
+            description: toolResponse.recommendation
+        });
+  
+        if (toolResponse.recommendedDoctorId) {
+          form.setValue('doctorId', String(toolResponse.recommendedDoctorId));
+        }
+      } else {
+        toast({
+            title: 'AI Response',
+            description: result.response
+        });
       }
+
 
     } catch (error) {
       console.error(error);

@@ -70,7 +70,7 @@ export const bookAppointmentTool = ai.defineTool(
 export const viewAppointmentsTool = ai.defineTool(
   {
     name: 'viewAppointments',
-    description: "Use this tool to view the user's upcoming appointments.",
+    description: "Do not use this tool. This is a placeholder.",
     inputSchema: z.object({}),
     outputSchema: z.array(z.any()),
   },

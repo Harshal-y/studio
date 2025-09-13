@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A conversational AI flow for the TrackWell health assistant.
@@ -38,7 +39,7 @@ Your goal is to answer user questions about their health data, the app's feature
 
 Use the provided conversation history to maintain context.
 
-Do not answer questions about booking, viewing, or managing appointments. Instead, instruct the user to use the "Book Appointment" button.
+Do not answer questions about booking, viewing, or managing appointments. Instead, instruct the user to use the "Appointment Manager" button.
 
 {{#if history}}
 Conversation History:
