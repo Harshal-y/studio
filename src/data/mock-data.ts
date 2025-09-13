@@ -1,5 +1,5 @@
 
-import type { User } from '@/contexts/data-provider';
+import type { User, Doctor } from '@/contexts/data-provider';
 
 const generateHistoricalData = () =>
   Array.from({ length: 7 }, (_, i) => {
@@ -116,6 +116,23 @@ export const allFamilyMembers: User[] = [
 export const emergencyContacts = [
   { id: 1, name: 'Dr. Evelyn Reed', phone: '(555) 123-4567' },
   { id: 2, name: 'Alex Miller', phone: '(555) 987-6543' },
+];
+
+export const allDoctors: Doctor[] = [
+    {
+        id: 1,
+        name: 'Dr. Emily Carter',
+        degree: 'MD, PhD',
+        experience: 15,
+        isVerified: true,
+    },
+    {
+        id: 2,
+        name: 'Dr. Ben Hanson',
+        degree: 'MBBS',
+        experience: 8,
+        isVerified: true,
+    }
 ];
 
 export const userPreferences =
