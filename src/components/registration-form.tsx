@@ -93,8 +93,8 @@ function DateOfBirthPicker({
   const endYear = currentYear - 16;
 
   const years = Array.from({ length: endYear - startYear + 1 }, (_, i) =>
-    String(endYear - i)
-  );
+    String(startYear + i)
+  ).reverse();
   const months = Array.from({ length: 12 }, (_, i) => ({
     value: String(i),
     label: new Date(0, i).toLocaleString('default', { month: 'long' }),
