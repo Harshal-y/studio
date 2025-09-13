@@ -45,9 +45,12 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
-import { ScrollArea, ScrollBar } from './ui/scroll-area';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
-import { Label } from './ui/label';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from './ui/carousel';
 
 interface AppointmentManagerProps {
   open: boolean;
@@ -71,11 +74,71 @@ const timeSlots = Array.from({ length: 18 }, (_, i) => {
     .padStart(2, '0')}`;
 });
 
+function TimePicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [api, setApi] = useState<CarouselApi>();
+
+  useEffect(() => {
+    if (!api) return;
+
+    const selectedIndex = timeSlots.indexOf(value);
+    if (selectedIndex !== -1 && selectedIndex !== api.selectedScrollSnap()) {
+      api.scrollTo(selectedIndex);
+    }
+
+    const onSelect = () => {
+      const selectedTime = timeSlots[api.selectedScrollSnap()];
+      if (selectedTime) {
+        onChange(selectedTime);
+      }
+    };
+
+    api.on('select', onSelect);
+
+    return () => {
+      api.off('select', onSelect);
+    };
+  }, [api, value, onChange]);
+
+  return (
+    <Carousel
+      setApi={setApi}
+      opts={{
+        align: 'center',
+      }}
+      orientation="vertical"
+      className="w-full"
+    >
+      <CarouselContent className="-mt-1 h-32">
+        {timeSlots.map((time, index) => (
+          <CarouselItem key={index} className="pt-1 basis-1/3">
+            <div className="flex items-center justify-center h-full">
+              <Button
+                variant={value === time ? 'default' : 'ghost'}
+                className="w-full text-lg"
+                onClick={() => api?.scrollTo(index)}
+              >
+                {time}
+              </Button>
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+    </Carousel>
+  );
+}
+
 export function AppointmentManager({
   open,
   onOpenChange,
 }: AppointmentManagerProps) {
-  const { doctors, currentUser, addAppointment, setAppointmentChatbotOpen } = useData();
+  const { doctors, currentUser, addAppointment, setAppointmentChatbotOpen } =
+    useData();
   const { toast } = useToast();
   const [isRecommending, setIsRecommending] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
@@ -88,6 +151,7 @@ export function AppointmentManager({
       issue: '',
       symptoms: '',
       history: '',
+      time: '12:00', // Default to a common time
     },
   });
 
@@ -330,37 +394,12 @@ export function AppointmentManager({
                       <FormItem>
                         <FormLabel>Time</FormLabel>
                         <FormControl>
-                          <ScrollArea className="w-full whitespace-nowrap rounded-md border">
-                            <RadioGroup
-                              onValueChange={field.onChange}
+                          <div className="p-2 border rounded-md">
+                            <TimePicker
                               value={field.value}
-                              className="flex p-2"
-                            >
-                              {timeSlots.map((time) => (
-                                <FormItem
-                                  key={time}
-                                  className="flex items-center space-x-2 space-y-0"
-                                >
-                                  <FormControl>
-                                    <RadioGroupItem value={time} id={time} className="sr-only" />
-                                  </FormControl>
-                                   <Label
-                                    htmlFor={time}
-                                    className={cn(
-                                      'flex h-9 items-center justify-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
-                                      'cursor-pointer',
-                                      field.value === time
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'bg-transparent'
-                                    )}
-                                  >
-                                    {time}
-                                  </Label>
-                                </FormItem>
-                              ))}
-                            </RadioGroup>
-                             <ScrollBar orientation="horizontal" />
-                          </ScrollArea>
+                              onChange={field.onChange}
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
