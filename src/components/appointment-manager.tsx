@@ -33,14 +33,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { appointmentFlow } from '@/ai/flows/appointment-flow';
+import { appointmentFlow, bookAppointment, viewAppointments } from '@/ai/flows/appointment-flow';
 import { Loader2, Sparkles } from 'lucide-react';
 import { Calendar } from './ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { viewAppointmentsTool, bookAppointmentTool } from '@/ai/flows/appointment-tool';
 import { Skeleton } from './ui/skeleton';
 
 interface AppointmentManagerProps {
@@ -140,7 +139,7 @@ export function AppointmentManager({
             return;
         }
 
-        const result = await bookAppointmentTool({
+        const result = await bookAppointment({
             doctorId: parseInt(values.doctorId, 10),
             doctorName: selectedDoctor.name,
             date: format(values.date, 'yyyy-MM-dd'),
@@ -173,7 +172,7 @@ export function AppointmentManager({
   const fetchAppointments = async () => {
       setIsLoadingAppointments(true);
       try {
-          const result = await viewAppointmentsTool({});
+          const result = await viewAppointments();
           setUpcomingAppointments(result);
       } catch(e) {
           toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch appointments.'});

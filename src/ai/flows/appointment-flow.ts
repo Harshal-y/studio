@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI flow that recommends doctors and books appointments.
@@ -10,6 +11,9 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool } from './appointment-tool';
+
+export let appointments: { id: number, doctorId: number, doctorName: string, date: string, time: string, patientName: string, issue: string }[] = [];
+
 
 const AppointmentFlowInputSchema = z.object({
   symptoms: z.string().optional().describe("The user's current symptoms."),
@@ -70,3 +74,18 @@ export const appointmentFlow = ai.defineFlow(
     return { response: output!.response };
   }
 );
+
+
+// Wrapper functions for tools to be called from client components
+
+export async function bookAppointment(input: z.infer<typeof bookAppointmentTool.inputSchema>) {
+    const result = await bookAppointmentTool(input);
+    if (result.success && result.appointment) {
+        appointments.push(result.appointment);
+    }
+    return result;
+}
+
+export async function viewAppointments() {
+    return await viewAppointmentsTool({});
+}

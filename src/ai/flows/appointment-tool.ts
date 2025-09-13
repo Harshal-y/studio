@@ -1,19 +1,9 @@
+
 'use server';
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-
-export let appointments: { id: number, doctorId: number, doctorName: string, date: string, time: string, patientName: string, issue: string }[] = [];
-
-// In-memory storage for reminders. In a real app, this would be a persistent job queue.
-let reminderJobs: { [appointmentId: number]: NodeJS.Timeout[] } = {};
-
-const clearReminders = (appointmentId: number) => {
-    if (reminderJobs[appointmentId]) {
-        reminderJobs[appointmentId].forEach(clearTimeout);
-        delete reminderJobs[appointmentId];
-    }
-}
+import { z } from 'zod';
+import { appointments } from './appointment-flow';
 
 export const findDoctorsTool = ai.defineTool(
   {
@@ -67,7 +57,6 @@ export const bookAppointmentTool = ai.defineTool(
   },
   async (input) => {
     const newAppointment = { ...input, id: Date.now() };
-    appointments.push(newAppointment);
     console.log('New appointment booked:', newAppointment);
     
     return { 
