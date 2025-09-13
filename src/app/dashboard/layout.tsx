@@ -192,20 +192,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               </TooltipTrigger>
               <TooltipContent side="right">Dashboard</TooltipContent>
             </Tooltip>
-             <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                  onClick={() => setIsAppointmentManagerOpen(true)}
-                >
-                  <CalendarPlus className="h-5 w-5" />
-                  <span className="sr-only">Book Appointment</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Book Appointment</TooltipContent>
-            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -321,6 +307,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </Sheet>
           <div className="relative flex-1 md:grow-0">
           </div>
+          <Button
+            variant="outline"
+            className="hidden sm:flex"
+            onClick={() => setIsAppointmentManagerOpen(true)}
+          >
+            <CalendarPlus className="mr-2 h-4 w-4" />
+            Book Appointment
+          </Button>
           <ProfileSwitcher />
         </header>
         <main className="flex-1 overflow-auto">
