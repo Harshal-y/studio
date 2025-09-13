@@ -48,8 +48,6 @@ function ProfileSwitcher() {
 
   if (!currentUser) return null;
 
-  const otherFamilyMembers = familyMembers.filter(m => m.id !== selfUser?.id);
-
   const copyToClipboard = () => {
     if (currentUser?.deviceCode) {
       navigator.clipboard.writeText(currentUser.deviceCode);
@@ -104,29 +102,17 @@ function ProfileSwitcher() {
         )}
 
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>Users</DropdownMenuLabel>
-        <DropdownMenuItem
-          onClick={() => selfUser && setCurrentUser(selfUser)}
-          disabled={currentUser.id === selfUser?.id}
-        >
-          {selfUser?.name}
-        </DropdownMenuItem>
+        <DropdownMenuLabel>Switch Profile</DropdownMenuLabel>
+        {familyMembers.map((member) => (
+            <DropdownMenuItem
+            key={member.id}
+            onClick={() => setCurrentUser(member)}
+            disabled={member.id === currentUser.id}
+            >
+            {member.name}
+            </DropdownMenuItem>
+        ))}
 
-        {otherFamilyMembers.length > 0 && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Family Members</DropdownMenuLabel>
-            {otherFamilyMembers.map((member) => (
-              <DropdownMenuItem
-                key={member.id}
-                onClick={() => setCurrentUser(member)}
-                disabled={member.id === currentUser.id}
-              >
-                {member.name}
-              </DropdownMenuItem>
-            ))}
-          </>
-        )}
          <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setIsAddFamilyDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
