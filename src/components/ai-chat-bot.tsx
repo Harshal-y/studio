@@ -17,6 +17,7 @@ import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Skeleton } from './ui/skeleton';
+import { useData } from '@/contexts/data-provider';
 
 type Message = {
   role: 'user' | 'model';
@@ -28,7 +29,7 @@ export function AIChatBot() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollAreaViewportRef = useRef<HTMLDivElement>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const { isChatbotOpen, setChatbotOpen } = useData();
 
   useEffect(() => {
     if (scrollAreaViewportRef.current) {
@@ -68,7 +69,7 @@ export function AIChatBot() {
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isChatbotOpen} onOpenChange={setChatbotOpen}>
       <PopoverTrigger asChild>
         <Button
           className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg"
@@ -90,7 +91,7 @@ export function AIChatBot() {
               <Bot className="h-6 w-6 text-primary" />
               <CardTitle>AI Health Assistant</CardTitle>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+            <Button variant="ghost" size="icon" onClick={() => setChatbotOpen(false)}>
               <X className="h-4 w-4" />
             </Button>
           </CardHeader>

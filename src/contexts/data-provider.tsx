@@ -74,6 +74,8 @@ interface DataContextType {
   addDoctor: (doctor: Doctor) => void;
   appointments: Appointment[];
   addAppointment: (appointment: Appointment) => void;
+  isChatbotOpen: boolean;
+  setChatbotOpen: (open: boolean) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -89,6 +91,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   );
   const [doctors, setDoctors] = useState<Doctor[]>(allDoctors);
   const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
+  const [isChatbotOpen, setChatbotOpen] = useState(false);
 
 
    useEffect(() => {
@@ -193,7 +196,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     doctors,
     addDoctor,
     appointments,
-    addAppointment
+    addAppointment,
+    isChatbotOpen,
+    setChatbotOpen
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
