@@ -40,6 +40,7 @@ import {
 import { useState } from 'react';
 import { AddFamilyMemberDialog } from '@/components/add-family-member-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { AIChatBot } from '@/components/ai-chat-bot';
 
 function ProfileSwitcher() {
   const { currentUser, setCurrentUser, familyMembers, selfUser } = useData();
@@ -107,12 +108,15 @@ function ProfileSwitcher() {
         <DropdownMenuSeparator />
         
         {selfUser && (
+          <>
+            <DropdownMenuLabel>Your Account</DropdownMenuLabel>
             <DropdownMenuItem
             onClick={() => setCurrentUser(selfUser)}
             disabled={selfUser.id === currentUser.id}
             >
-            {selfUser.name} (You)
+            {selfUser.name}
             </DropdownMenuItem>
+          </>
         )}
 
         {otherFamilyMembers.length > 0 && (
@@ -279,7 +283,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
           <ProfileSwitcher />
         </header>
-        {children}
+        <main className="flex-1 overflow-auto">
+          {children}
+        </main>
+        <AIChatBot />
       </div>
     </div>
   );
@@ -296,5 +303,3 @@ export default function DashboardLayout({
     </DataProvider>
   );
 }
-
-    
