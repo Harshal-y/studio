@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -70,15 +71,18 @@ export function RegistrationForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    const deviceCode = `${values.name.split(' ')[0].toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    
     toast({
       title: 'Registration Successful!',
-      description: 'You are now being redirected to your dashboard.',
+      description: `Your device code is ${deviceCode}. Share it with family to connect. You are now being redirected to your dashboard.`,
+      duration: 9000,
     });
+    
     // Redirect to dashboard after a short delay
     setTimeout(() => {
       router.push('/dashboard');
-    }, 2000);
+    }, 5000);
   }
 
   return (
