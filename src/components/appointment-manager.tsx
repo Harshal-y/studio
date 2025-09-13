@@ -66,13 +66,9 @@ const formSchema = z.object({
   time: z.string().min(1, 'Please select a time.'),
 });
 
-const timeSlots = Array.from({ length: 18 }, (_, i) => {
-  const hour = Math.floor(i / 2) + 9;
-  const minute = (i % 2) * 30;
-  return `${hour.toString().padStart(2, '0')}:${minute
-    .toString()
-    .padStart(2, '0')}`;
-});
+const hours = Array.from({ length: 9 }, (_, i) => (i + 9).toString().padStart(2, '0')); // 09 to 17
+const minutes = ['00', '30'];
+
 
 function TimePicker({
   value,
@@ -81,55 +77,93 @@ function TimePicker({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const [api, setApi] = useState<CarouselApi>();
+  const [hourApi, setHourApi] = useState<CarouselApi>();
+  const [minuteApi, setMinuteApi] = useState<CarouselApi>();
+
+  const [selectedHour, selectedMinute] = value.split(':');
 
   useEffect(() => {
-    if (!api) return;
-
-    const selectedIndex = timeSlots.indexOf(value);
-    if (selectedIndex !== -1 && selectedIndex !== api.selectedScrollSnap()) {
-      api.scrollTo(selectedIndex);
+    if (!hourApi) return;
+    const currentHourIndex = hours.indexOf(selectedHour);
+    if (currentHourIndex !== -1) {
+      hourApi.scrollTo(currentHourIndex);
     }
-
     const onSelect = () => {
-      const selectedTime = timeSlots[api.selectedScrollSnap()];
-      if (selectedTime) {
-        onChange(selectedTime);
-      }
-    };
+        const newHour = hours[hourApi.selectedScrollSnap()];
+        if(newHour) {
+            onChange(`${newHour}:${selectedMinute}`);
+        }
+    }
+    hourApi.on('select', onSelect);
+    return () => { hourApi.off('select', onSelect); };
+  }, [hourApi, selectedHour, selectedMinute, onChange]);
 
-    api.on('select', onSelect);
-
-    return () => {
-      api.off('select', onSelect);
-    };
-  }, [api, value, onChange]);
+  useEffect(() => {
+    if (!minuteApi) return;
+     const currentMinuteIndex = minutes.indexOf(selectedMinute);
+    if (currentMinuteIndex !== -1) {
+      minuteApi.scrollTo(currentMinuteIndex);
+    }
+     const onSelect = () => {
+        const newMinute = minutes[minuteApi.selectedScrollSnap()];
+        if(newMinute) {
+            onChange(`${selectedHour}:${newMinute}`);
+        }
+    }
+    minuteApi.on('select', onSelect);
+    return () => { minuteApi.off('select', onSelect); };
+  }, [minuteApi, selectedHour, selectedMinute, onChange]);
 
   return (
-    <Carousel
-      setApi={setApi}
-      opts={{
-        align: 'center',
-      }}
-      orientation="vertical"
-      className="w-full"
-    >
-      <CarouselContent className="-mt-1 h-32">
-        {timeSlots.map((time, index) => (
-          <CarouselItem key={index} className="pt-1 basis-1/3">
-            <div className="flex items-center justify-center h-full">
-              <Button
-                variant={value === time ? 'default' : 'ghost'}
-                className="w-full text-lg"
-                onClick={() => api?.scrollTo(index)}
-              >
-                {time}
-              </Button>
-            </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-    </Carousel>
+    <div className="flex items-center justify-center gap-2">
+      <Carousel
+        setApi={setHourApi}
+        opts={{ align: 'center' }}
+        orientation="vertical"
+        className="w-full"
+      >
+        <CarouselContent className="-mt-1 h-32">
+          {hours.map((hour, index) => (
+            <CarouselItem key={index} className="pt-1 basis-1/3">
+              <div className="flex items-center justify-center h-full">
+                <Button
+                  variant={selectedHour === hour ? 'default' : 'ghost'}
+                  className="w-full text-lg"
+                  onClick={() => hourApi?.scrollTo(index)}
+                  type="button"
+                >
+                  {hour}
+                </Button>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+      <span className="text-2xl font-bold">:</span>
+       <Carousel
+        setApi={setMinuteApi}
+        opts={{ align: 'center' }}
+        orientation="vertical"
+        className="w-full"
+      >
+        <CarouselContent className="-mt-1 h-32">
+          {minutes.map((minute, index) => (
+            <CarouselItem key={index} className="pt-1 basis-1/3">
+              <div className="flex items-center justify-center h-full">
+                <Button
+                  variant={selectedMinute === minute ? 'default' : 'ghost'}
+                  className="w-full text-lg"
+                  onClick={() => minuteApi?.scrollTo(index)}
+                  type="button"
+                >
+                  {minute}
+                </Button>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+    </div>
   );
 }
 
