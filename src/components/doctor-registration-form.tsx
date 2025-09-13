@@ -108,7 +108,7 @@ export function DoctorRegistrationForm() {
           title: 'Verification Successful!',
           description: 'Your profile has been verified and added to our network.',
         });
-         setTimeout(() => router.push('/'), 3000);
+         setTimeout(() => router.push('/dashboard'), 3000);
       } else {
         toast({
           variant: 'destructive',
@@ -192,7 +192,7 @@ export function DoctorRegistrationForm() {
                         accept={ACCEPTED_IMAGE_TYPES.join(',')}
                     />
                     {preview ? (
-                         <Image src={preview} alt="Certificate Preview" layout="fill" objectFit="contain" className="rounded-md" />
+                         <Image src={preview} alt="Certificate Preview" fill objectFit="contain" className="rounded-md" />
                     ) : (
                         <div className="text-center text-muted-foreground flex flex-col items-center">
                             <UploadCloud className="w-8 h-8 mb-2" />
