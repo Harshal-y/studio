@@ -43,7 +43,6 @@ import { useState } from 'react';
 import { AddFamilyMemberDialog } from '@/components/add-family-member-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { AIChatBot } from '@/components/ai-chat-bot';
-import { BookAppointmentDialog } from '@/components/book-appointment-dialog';
 import { useRouter } from 'next/navigation';
 
 
@@ -162,11 +161,9 @@ function ProfileSwitcher() {
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
-  const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
 
   return (
     <>
-    <BookAppointmentDialog open={isAppointmentDialogOpen} onOpenChange={setIsAppointmentDialogOpen} />
     <div className="flex min-h-screen w-full bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
@@ -225,20 +222,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">Family</TooltipContent>
-            </Tooltip>
-             <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                    onClick={() => setIsAppointmentDialogOpen(true)}
-                  >
-                  <CalendarPlus className="h-5 w-5" />
-                  <span className="sr-only">Book Appointment</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Book Appointment</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </nav>
@@ -299,14 +282,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   <Users className="h-5 w-5" />
                   Family
                 </Link>
-                <Button
-                    variant="ghost"
-                    className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground justify-start -ml-2"
-                    onClick={() => setIsAppointmentDialogOpen(true)}
-                  >
-                  <CalendarPlus className="h-5 w-5" />
-                  Book Appointment
-                </Button>
                 <Link
                   href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -318,13 +293,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
           <div className="relative flex-1 md:grow-0">
-             <Button
-                size="sm"
-                className="hidden md:flex"
-                onClick={() => setIsAppointmentDialogOpen(true)}
-              >
-                <CalendarPlus className="mr-2" /> Book Appointment
-              </Button>
           </div>
           <ProfileSwitcher />
         </header>

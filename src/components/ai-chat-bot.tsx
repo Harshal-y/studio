@@ -16,6 +16,7 @@ import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Skeleton } from './ui/skeleton';
+import { useData } from '@/contexts/data-provider';
 
 type Message = {
   role: 'user' | 'model';
@@ -28,6 +29,7 @@ export function AIChatBot() {
   const [loading, setLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const { doctors } = useData();
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -45,13 +47,16 @@ export function AIChatBot() {
     setInput('');
 
     try {
+      const verifiedDoctors = doctors.filter((d) => d.isVerified);
       const result = await chat({
         prompt: input,
         history: messages,
+        doctors: verifiedDoctors,
       });
       const modelMessage: Message = { role: 'model', content: result.response };
       setMessages((prev) => [...prev, modelMessage]);
     } catch (error) {
+      console.error(error);
       const errorMessage: Message = {
         role: 'model',
         content: 'Sorry, I encountered an error. Please try again.',
@@ -94,7 +99,7 @@ export function AIChatBot() {
               <div className="space-y-4 pr-4">
                 {messages.length === 0 && (
                   <div className="text-center text-sm text-muted-foreground p-4">
-                    Ask me anything about your health data or the app!
+                    Ask me to find a doctor, book an appointment, or check your upcoming appointments!
                   </div>
                 )}
                 {messages.map((message, index) => (
@@ -135,7 +140,7 @@ export function AIChatBot() {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a question..."
+                placeholder="Book an appointment..."
                 disabled={loading}
               />
               <Button type="submit" size="icon" disabled={loading}>
