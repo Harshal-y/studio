@@ -66,9 +66,9 @@ const formSchema = z.object({
   time: z.string().min(1, 'Please select a time.'),
 });
 
-const hours = Array.from({ length: 9 }, (_, i) => (i + 9).toString().padStart(2, '0')); // 09 to 17
-const minutes = ['00', '30'];
-
+const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
+const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+const ampm = ['AM', 'PM'];
 
 function TimePicker({
   value,
@@ -79,40 +79,79 @@ function TimePicker({
 }) {
   const [hourApi, setHourApi] = useState<CarouselApi>();
   const [minuteApi, setMinuteApi] = useState<CarouselApi>();
+  const [ampmApi, setAmpmApi] = useState<CarouselApi>();
 
-  const [selectedHour, selectedMinute] = value.split(':');
+  const [currentHour, currentMinute] = value.split(':');
+  const currentHour24 = parseInt(currentHour, 10);
+  
+  const selectedAmpm = currentHour24 >= 12 ? 'PM' : 'AM';
+  const selectedHour12 = (currentHour24 % 12 === 0 ? 12 : currentHour24 % 12).toString().padStart(2, '0');
+  const selectedMinute = currentMinute;
+
+
+  const handleValueChange = (newHour: string, newMinute: string, newAmpm: string) => {
+    let hour24 = parseInt(newHour, 10);
+    if (newAmpm === 'PM' && hour24 < 12) {
+      hour24 += 12;
+    }
+    if (newAmpm === 'AM' && hour24 === 12) {
+      hour24 = 0;
+    }
+    onChange(`${hour24.toString().padStart(2, '0')}:${newMinute}`);
+  };
 
   useEffect(() => {
     if (!hourApi) return;
-    const currentHourIndex = hours.indexOf(selectedHour);
+    const currentHourIndex = hours.indexOf(selectedHour12);
     if (currentHourIndex !== -1) {
       hourApi.scrollTo(currentHourIndex);
     }
     const onSelect = () => {
-        const newHour = hours[hourApi.selectedScrollSnap()];
-        if(newHour) {
-            onChange(`${newHour}:${selectedMinute}`);
-        }
-    }
+      const newHour = hours[hourApi.selectedScrollSnap()];
+      if (newHour) {
+        handleValueChange(newHour, selectedMinute, selectedAmpm);
+      }
+    };
     hourApi.on('select', onSelect);
-    return () => { hourApi.off('select', onSelect); };
-  }, [hourApi, selectedHour, selectedMinute, onChange]);
+    return () => {
+      hourApi.off('select', onSelect);
+    };
+  }, [hourApi, selectedHour12, selectedMinute, selectedAmpm]);
 
   useEffect(() => {
     if (!minuteApi) return;
-     const currentMinuteIndex = minutes.indexOf(selectedMinute);
+    const currentMinuteIndex = minutes.indexOf(selectedMinute);
     if (currentMinuteIndex !== -1) {
       minuteApi.scrollTo(currentMinuteIndex);
     }
+    const onSelect = () => {
+      const newMinute = minutes[minuteApi.selectedScrollSnap()];
+      if (newMinute) {
+        handleValueChange(selectedHour12, newMinute, selectedAmpm);
+      }
+    };
+    minuteApi.on('select', onSelect);
+    return () => {
+      minuteApi.off('select', onSelect);
+    };
+  }, [minuteApi, selectedHour12, selectedMinute, selectedAmpm]);
+
+    useEffect(() => {
+    if (!ampmApi) return;
+     const currentAmpmIndex = ampm.indexOf(selectedAmpm);
+    if (currentAmpmIndex !== -1) {
+      ampmApi.scrollTo(currentAmpmIndex);
+    }
      const onSelect = () => {
-        const newMinute = minutes[minuteApi.selectedScrollSnap()];
-        if(newMinute) {
-            onChange(`${selectedHour}:${newMinute}`);
+        const newAmpm = ampm[ampmApi.selectedScrollSnap()];
+        if(newAmpm) {
+            handleValueChange(selectedHour12, selectedMinute, newAmpm);
         }
     }
-    minuteApi.on('select', onSelect);
-    return () => { minuteApi.off('select', onSelect); };
-  }, [minuteApi, selectedHour, selectedMinute, onChange]);
+    ampmApi.on('select', onSelect);
+    return () => { ampmApi.off('select', onSelect); };
+  }, [ampmApi, selectedHour12, selectedMinute, selectedAmpm]);
+
 
   return (
     <div className="flex items-center justify-center gap-2">
@@ -127,7 +166,7 @@ function TimePicker({
             <CarouselItem key={index} className="pt-1 basis-1/3">
               <div className="flex items-center justify-center h-full">
                 <Button
-                  variant={selectedHour === hour ? 'default' : 'ghost'}
+                  variant={selectedHour12 === hour ? 'default' : 'ghost'}
                   className="w-full text-lg"
                   onClick={() => hourApi?.scrollTo(index)}
                   type="button"
@@ -157,6 +196,29 @@ function TimePicker({
                   type="button"
                 >
                   {minute}
+                </Button>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+       <Carousel
+        setApi={setAmpmApi}
+        opts={{ align: 'center' }}
+        orientation="vertical"
+        className="w-full"
+      >
+        <CarouselContent className="-mt-1 h-32">
+          {ampm.map((val, index) => (
+            <CarouselItem key={index} className="pt-1 basis-1/3">
+              <div className="flex items-center justify-center h-full">
+                <Button
+                  variant={selectedAmpm === val ? 'default' : 'ghost'}
+                  className="w-full text-lg"
+                  onClick={() => ampmApi?.scrollTo(index)}
+                  type="button"
+                >
+                  {val}
                 </Button>
               </div>
             </CarouselItem>
