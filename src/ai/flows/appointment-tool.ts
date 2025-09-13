@@ -1,5 +1,5 @@
 
-'use server';
+// This file does NOT have 'use server'. It only defines tools.
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';

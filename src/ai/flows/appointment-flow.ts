@@ -62,7 +62,7 @@ Your response should be conversational and helpful. Do not mention the 'viewAppo
 });
 
 
-export const appointmentFlow = ai.defineFlow(
+const internalAppointmentFlow = ai.defineFlow(
   {
     name: 'appointmentFlow',
     inputSchema: AppointmentFlowInputSchema,
@@ -73,6 +73,11 @@ export const appointmentFlow = ai.defineFlow(
     return { response: output!.response };
   }
 );
+
+// Export an async wrapper function
+export async function appointmentFlow(input: AppointmentFlowInput): Promise<AppointmentFlowOutput> {
+  return internalAppointmentFlow(input);
+}
 
 
 // Wrapper functions for tools to be called from client components
