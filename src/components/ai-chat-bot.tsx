@@ -32,7 +32,10 @@ export function AIChatBot() {
 
   useEffect(() => {
     if (scrollAreaViewportRef.current) {
-      scrollAreaViewportRef.current.scrollTop = scrollAreaViewportRef.current.scrollHeight;
+      scrollAreaViewportRef.current.scrollTo({
+        top: scrollAreaViewportRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
     }
   }, [messages, loading]);
 
