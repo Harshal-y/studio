@@ -43,7 +43,7 @@ import { Calendar } from './ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import {
   Carousel,
@@ -324,6 +324,15 @@ export function AppointmentManager({
     }
   }, [open]);
 
+  const formatTime12h = (time24: string) => {
+    if (!time24) return 'Select time';
+    const [hour, minute] = time24.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hour, 10));
+    date.setMinutes(parseInt(minute, 10));
+    return format(date, 'hh:mm a');
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -487,16 +496,32 @@ export function AppointmentManager({
                     control={form.control}
                     name="time"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex flex-col">
                         <FormLabel>Time</FormLabel>
-                        <FormControl>
-                          <div className="p-2 border rounded-md">
-                            <TimePicker
-                              value={field.value}
-                              onChange={field.onChange}
-                            />
-                          </div>
-                        </FormControl>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'w-full pl-3 text-left font-normal',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                              >
+                                {formatTime12h(field.value)}
+                                <Clock className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <div className="p-2 border rounded-md w-64">
+                              <TimePicker
+                                value={field.value}
+                                onChange={field.onChange}
+                              />
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -528,7 +553,7 @@ export function AppointmentManager({
                     </p>
                     <p className="text-sm mt-2">
                       {format(new Date(appt.date), 'EEEE, MMMM d, yyyy')} at{' '}
-                      {appt.time}
+                      {formatTime12h(appt.time)}
                     </p>
                   </div>
                 ))
