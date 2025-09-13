@@ -9,6 +9,7 @@ import {
   Copy,
   HeartPulse,
   History,
+  LogOut,
   Menu,
   PanelLeft,
   PlusCircle,
@@ -43,12 +44,14 @@ import { AddFamilyMemberDialog } from '@/components/add-family-member-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { AIChatBot } from '@/components/ai-chat-bot';
 import { BookAppointmentDialog } from '@/components/book-appointment-dialog';
+import { useRouter } from 'next/navigation';
 
 
 function ProfileSwitcher() {
   const { currentUser, setCurrentUser, familyMembers, selfUser } = useData();
   const [isAddFamilyDialogOpen, setIsAddFamilyDialogOpen] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   if (!currentUser) return null;
 
@@ -64,6 +67,9 @@ function ProfileSwitcher() {
   
   const otherFamilyMembers = familyMembers.filter(m => m.id !== selfUser?.id);
 
+  const handleLogout = () => {
+    router.push('/');
+  }
 
   return (
     <>
@@ -143,6 +149,10 @@ function ProfileSwitcher() {
         <DropdownMenuItem onClick={() => setIsAddFamilyDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Family Member
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
