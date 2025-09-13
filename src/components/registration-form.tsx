@@ -16,25 +16,17 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from '@/hooks/use-location';
 import { Checkbox } from './ui/checkbox';
+import { useEffect, useState } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -68,6 +60,89 @@ const formSchema = z.object({
   contactPermission: z.boolean().default(false).optional(),
 });
 
+function DateOfBirthPicker({
+  value,
+  onChange,
+}: {
+  value: Date | undefined;
+  onChange: (date: Date) => void;
+}) {
+  const [day, setDay] = useState<string | undefined>(
+    value ? String(value.getDate()) : undefined
+  );
+  const [month, setMonth] = useState<string | undefined>(
+    value ? String(value.getMonth()) : undefined
+  );
+  const [year, setYear] = useState<string | undefined>(
+    value ? String(value.getFullYear()) : undefined
+  );
+
+  useEffect(() => {
+    if (day && month && year) {
+      const dayNum = parseInt(day, 10);
+      const monthNum = parseInt(month, 10);
+      const yearNum = parseInt(year, 10);
+      if (!isNaN(dayNum) && !isNaN(monthNum) && !isNaN(yearNum)) {
+        onChange(new Date(yearNum, monthNum, dayNum));
+      }
+    }
+  }, [day, month, year, onChange]);
+
+  const currentYear = new Date().getFullYear();
+  const startYear = 1900;
+  const endYear = currentYear - 16;
+
+  const years = Array.from({ length: endYear - startYear + 1 }, (_, i) =>
+    String(endYear - i)
+  );
+  const months = Array.from({ length: 12 }, (_, i) => ({
+    value: String(i),
+    label: new Date(0, i).toLocaleString('default', { month: 'long' }),
+  }));
+  const days = Array.from({ length: 31 }, (_, i) => String(i + 1));
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      <Select value={day} onValueChange={setDay}>
+        <SelectTrigger>
+          <SelectValue placeholder="Day" />
+        </SelectTrigger>
+        <SelectContent>
+          {days.map((d) => (
+            <SelectItem key={d} value={d}>
+              {d}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={month} onValueChange={setMonth}>
+        <SelectTrigger>
+          <SelectValue placeholder="Month" />
+        </SelectTrigger>
+        <SelectContent>
+          {months.map((m) => (
+            <SelectItem key={m.value} value={m.value}>
+              {m.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={year} onValueChange={setYear}>
+        <SelectTrigger>
+          <SelectValue placeholder="Year" />
+        </SelectTrigger>
+        <SelectContent>
+          {years.map((y) => (
+            <SelectItem key={y} value={y}>
+              {y}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
 export function RegistrationForm() {
   const router = useRouter();
   const { toast } = useToast();
@@ -84,14 +159,16 @@ export function RegistrationForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const deviceCode = `${values.name.split(' ')[0].toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    
+    const deviceCode = `${values.name
+      .split(' ')[0]
+      .toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
     toast({
       title: 'Registration Successful!',
       description: `You are now being redirected to your dashboard.`,
       duration: 5000,
     });
-    
+
     // Redirect to dashboard after a short delay
     setTimeout(() => {
       // We'll use localStorage to pass the device code to the dashboard
@@ -139,40 +216,12 @@ export function RegistrationForm() {
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Date of Birth</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={'outline'}
-                        className={cn(
-                          'w-full justify-start text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? (
-                          format(field.value, 'PPP')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      captionLayout="dropdown-buttons"
-                      fromYear={1900}
-                      toYear={new Date().getFullYear() - 16}
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date('1900-01-01')
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <FormControl>
+                  <DateOfBirthPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -225,18 +274,17 @@ export function RegistrationForm() {
           name="contactPermission"
           render={({ field }) => (
             <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-               <FormControl>
+              <FormControl>
                 <Checkbox
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>
-                 Allow access to contacts
-                </FormLabel>
+                <FormLabel>Allow access to contacts</FormLabel>
                 <FormDescription>
-                  This allows the app to access your contacts for the emergency alert system.
+                  This allows the app to access your contacts for the emergency
+                  alert system.
                 </FormDescription>
               </div>
             </FormItem>
