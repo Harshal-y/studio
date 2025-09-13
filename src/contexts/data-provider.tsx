@@ -2,9 +2,8 @@
 'use client';
 
 import {
-  vitals as initialVitalsData,
-  historicalData as initialHistoricalData,
-  devices as initialDevices,
+  users,
+  familyMembers
 } from '@/data/mock-data';
 import { VitalsState } from '@/components/vitals-monitor';
 import React, {
@@ -31,7 +30,19 @@ type HistoricalData = {
   bodyTemperature: number;
 };
 
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  avatar: string;
+  devices: Device[];
+  vitals: VitalsState;
+  historicalData: HistoricalData[];
+};
+
 interface DataContextType {
+  currentUser: User | null;
+  setCurrentUser: (user: User) => void;
   devices: Device[];
   vitals: VitalsState | null;
   historicalData: HistoricalData[] | null;
@@ -43,13 +54,22 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [devices, setDevices] = useState<Device[]>(
-    initialDevices.map((d) => ({ ...d, status: 'Disconnected' }))
-  );
+  const [currentUser, setCurrentUser] = useState<User | null>(users.self);
+  const [devices, setDevices] = useState<Device[]>([]);
   const [vitals, setVitals] = useState<VitalsState | null>(null);
   const [historicalData, setHistoricalData] = useState<HistoricalData[] | null>(
     null
   );
+
+  useEffect(() => {
+    if (currentUser) {
+      const initialDevices = currentUser.devices.map((d) => ({
+        ...d,
+        status: 'Disconnected' as 'Disconnected',
+      }));
+      setDevices(initialDevices);
+    }
+  }, [currentUser]);
 
   const isConnected = useMemo(
     () => devices.some((d) => d.status === 'Connected'),
@@ -57,15 +77,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected && currentUser) {
       // Deep copy to prevent mutation of original mock data
-      setVitals(JSON.parse(JSON.stringify(initialVitalsData)));
-      setHistoricalData(JSON.parse(JSON.stringify(initialHistoricalData)));
+      setVitals(JSON.parse(JSON.stringify(currentUser.vitals)));
+      setHistoricalData(JSON.parse(JSON.stringify(currentUser.historicalData)));
     } else {
       setVitals(null);
       setHistoricalData(null);
     }
-  }, [isConnected]);
+  }, [isConnected, currentUser]);
 
   const toggleDeviceConnection = (deviceId: number) => {
     setDevices((prevDevices) =>
@@ -82,6 +102,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const value = {
+    currentUser,
+    setCurrentUser,
     devices,
     vitals,
     historicalData,
