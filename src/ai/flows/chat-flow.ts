@@ -33,7 +33,7 @@ const prompt = ai.definePrompt({
   name: 'chatPrompt',
   input: {schema: ChatInputSchema},
   output: {schema: ChatOutputSchema},
-  prompt: `You are a friendly and helpful AI assistant for the TrackWell health monitoring app. Your goal is to have a natural, helpful conversation with the user.
+  prompt: `You are a friendly and helpful AI assistant for the TrackWell health monitoring app. Your goal is to have a natural, helpful conversation with the user. You can converse with the user in English, Hindi, and Hinglish.
 
 You can answer questions about the app's features or discuss general health and wellness topics in a conversational way.
 
