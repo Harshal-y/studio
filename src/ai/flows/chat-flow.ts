@@ -44,12 +44,8 @@ Do not answer questions about booking, viewing, or managing appointments. Instea
 {{#if history}}
 Conversation History:
 {{#each history}}
-{{#if (eq this.role 'user')}}
-User: {{{this.content}}}
-{{/if}}
-{{#if (eq this.role 'model')}}
-Assistant: {{{this.content}}}
-{{/if}}
+User: {{#if (eq this.role "user")}}{{{this.content}}}{{/if}}
+Assistant: {{#if (eq this.role "model")}}{{{this.content}}}{{/if}}
 {{/each}}
 {{/if}}
 
