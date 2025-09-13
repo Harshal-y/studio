@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -46,6 +47,7 @@ import { AIChatBot } from '@/components/ai-chat-bot';
 import { useRouter } from 'next/navigation';
 import { AppointmentManager } from '@/components/appointment-manager';
 import { AppointmentReminder } from '@/components/appointment-reminder';
+import { AppointmentChatbot } from '@/components/appointment-chatbot';
 
 
 function ProfileSwitcher() {
@@ -169,6 +171,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     <>
     <AppointmentManager open={isAppointmentManagerOpen} onOpenChange={setIsAppointmentManagerOpen} />
     <AppointmentReminder />
+    <AppointmentChatbot />
     <div className="flex min-h-screen w-full bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">

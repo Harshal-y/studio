@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { allFamilyMembers, selfUser as defaultSelfUser, allDoctors, appointments as mockAppointments } from '@/data/mock-data';
@@ -76,6 +77,8 @@ interface DataContextType {
   addAppointment: (appointment: Appointment) => void;
   isChatbotOpen: boolean;
   setChatbotOpen: (open: boolean) => void;
+  isAppointmentChatbotOpen: boolean;
+  setAppointmentChatbotOpen: (open: boolean) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -92,6 +95,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [doctors, setDoctors] = useState<Doctor[]>(allDoctors);
   const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
   const [isChatbotOpen, setChatbotOpen] = useState(false);
+  const [isAppointmentChatbotOpen, setAppointmentChatbotOpen] = useState(false);
 
 
    useEffect(() => {
@@ -198,7 +202,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     appointments,
     addAppointment,
     isChatbotOpen,
-    setChatbotOpen
+    setChatbotOpen,
+    isAppointmentChatbotOpen,
+    setAppointmentChatbotOpen
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

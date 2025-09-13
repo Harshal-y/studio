@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -72,7 +73,7 @@ export function AppointmentManager({
   open,
   onOpenChange,
 }: AppointmentManagerProps) {
-  const { doctors, currentUser, addAppointment, setChatbotOpen } = useData();
+  const { doctors, currentUser, addAppointment, setAppointmentChatbotOpen } = useData();
   const { toast } = useToast();
   const [isRecommending, setIsRecommending] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
@@ -91,7 +92,7 @@ export function AppointmentManager({
   const verifiedDoctors = doctors.filter((d) => d.isVerified);
 
   const handleGetRecommendation = async () => {
-    setChatbotOpen(true);
+    setAppointmentChatbotOpen(true);
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
