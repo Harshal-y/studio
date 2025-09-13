@@ -1,3 +1,4 @@
+
 'use client';
 
 import { chat } from '@/ai/flows/chat-flow';
@@ -26,14 +27,14 @@ export function AIChatBot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollAreaViewportRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    if (scrollAreaViewportRef.current) {
+      scrollAreaViewportRef.current.scrollTop = scrollAreaViewportRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, loading]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -91,7 +92,7 @@ export function AIChatBot() {
             </Button>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full" ref={scrollAreaRef}>
+            <ScrollArea className="h-full" viewportRef={scrollAreaViewportRef}>
               <div className="space-y-4 pr-4">
                 {messages.length === 0 && (
                   <div className="text-center text-sm text-muted-foreground p-4">
