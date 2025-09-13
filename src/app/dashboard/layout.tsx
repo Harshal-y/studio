@@ -310,15 +310,17 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </Sheet>
           <div className="relative flex-1 md:grow-0">
           </div>
-          <Button
-            variant="outline"
-            className="hidden sm:flex"
-            onClick={() => setIsAppointmentManagerOpen(true)}
-          >
-            <CalendarPlus className="mr-2 h-4 w-4" />
-            Book Appointment
-          </Button>
-          <ProfileSwitcher />
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              className="hidden sm:flex"
+              onClick={() => setIsAppointmentManagerOpen(true)}
+            >
+              <CalendarPlus className="mr-2 h-4 w-4" />
+              Book Appointment
+            </Button>
+            <ProfileSwitcher />
+          </div>
         </header>
         <main className="flex-1 overflow-auto">
           {children}

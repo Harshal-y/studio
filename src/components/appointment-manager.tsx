@@ -93,6 +93,7 @@ export function AppointmentManager({
 
   const handleGetRecommendation = async () => {
     setAppointmentChatbotOpen(true);
+    onOpenChange(false); // Close the current dialog
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {

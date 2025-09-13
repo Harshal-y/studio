@@ -23,7 +23,7 @@ export function AppointmentReminder() {
         if (minutesUntil > 59 && minutesUntil <= 60 && !sessionStorage.getItem(reminderKey60)) {
           toast({
             title: 'Appointment Reminder',
-            description: `Your appointment with ${appt.doctorName} is in 1 hour.`,
+            description: `Your appointment with Dr. ${appt.doctorName} is in 1 hour.`,
           });
           sessionStorage.setItem(reminderKey60, 'true');
         }
@@ -31,7 +31,7 @@ export function AppointmentReminder() {
         if (minutesUntil > 29 && minutesUntil <= 30 && !sessionStorage.getItem(reminderKey30)) {
           toast({
             title: 'Appointment Reminder',
-            description: `Your appointment with ${appt.doctorName} is in 30 minutes.`,
+            description: `Your appointment with Dr. ${appt.doctorName} is in 30 minutes.`,
           });
           sessionStorage.setItem(reminderKey30, 'true');
         }
