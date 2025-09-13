@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   Activity,
   Bot,
+  CalendarPlus,
   Copy,
   HeartPulse,
   History,
@@ -209,6 +210,18 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               </TooltipTrigger>
               <TooltipContent side="right">Family</TooltipContent>
             </Tooltip>
+             <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="#"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                >
+                  <CalendarPlus className="h-5 w-5" />
+                  <span className="sr-only">Book Appointment</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Book Appointment</TooltipContent>
+            </Tooltip>
           </TooltipProvider>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
@@ -267,6 +280,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 >
                   <Users className="h-5 w-5" />
                   Family
+                </Link>
+                <Link
+                  href="#"
+                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                >
+                  <CalendarPlus className="h-5 w-5" />
+                  Book Appointment
                 </Link>
                 <Link
                   href="#"
