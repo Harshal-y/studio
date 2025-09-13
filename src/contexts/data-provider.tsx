@@ -1,7 +1,7 @@
 
 'use client';
 
-import { allFamilyMembers, selfUser as defaultSelfUser, allDoctors } from '@/data/mock-data';
+import { allFamilyMembers, selfUser as defaultSelfUser, allDoctors, appointments as mockAppointments } from '@/data/mock-data';
 import { VitalsState } from '@/components/vitals-monitor';
 import React, {
   createContext,
@@ -45,6 +45,17 @@ export type Doctor = {
     experience: number;
     isVerified: boolean;
     verificationDetails?: any;
+    specialty?: string;
+};
+
+export type Appointment = {
+    id: number;
+    doctorId: number;
+    doctorName: string;
+    date: string;
+    time: string;
+    patientName: string;
+    issue: string;
 };
 
 interface DataContextType {
@@ -61,6 +72,8 @@ interface DataContextType {
   toggleDeviceConnection: (deviceId: number) => void;
   doctors: Doctor[];
   addDoctor: (doctor: Doctor) => void;
+  appointments: Appointment[];
+  addAppointment: (appointment: Appointment) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -75,6 +88,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     null
   );
   const [doctors, setDoctors] = useState<Doctor[]>(allDoctors);
+  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
 
 
    useEffect(() => {
@@ -159,6 +173,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setDoctors(prev => [...prev, doctor]);
     }
   }
+  
+  const addAppointment = (appointment: Appointment) => {
+      setAppointments(prev => [...prev, appointment]);
+  }
 
   const value = {
     currentUser,
@@ -173,7 +191,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setVitals,
     toggleDeviceConnection,
     doctors,
-    addDoctor
+    addDoctor,
+    appointments,
+    addAppointment
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

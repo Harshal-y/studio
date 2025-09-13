@@ -1,5 +1,5 @@
 
-import type { User, Doctor } from '@/contexts/data-provider';
+import type { User, Doctor, Appointment } from '@/contexts/data-provider';
 
 const generateHistoricalData = () =>
   Array.from({ length: 7 }, (_, i) => {
@@ -125,6 +125,7 @@ export const allDoctors: Doctor[] = [
         degree: 'MD, PhD',
         experience: 15,
         isVerified: true,
+        specialty: 'Cardiology',
     },
     {
         id: 2,
@@ -132,11 +133,15 @@ export const allDoctors: Doctor[] = [
         degree: 'MBBS',
         experience: 8,
         isVerified: true,
+        specialty: 'Dermatology',
     }
 ];
 
 export const userPreferences =
   'I am a 45-year-old male looking to improve my cardiovascular health and manage stress levels. I prefer light to moderate exercise suggestions.';
+
+export const appointments: Appointment[] = [];
+
 
 // Legacy exports for components that may not be updated yet
 export const devices = selfUser.devices;

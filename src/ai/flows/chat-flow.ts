@@ -9,8 +9,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool } from './appointment-tool';
-import { Doctor } from '@/contexts/data-provider';
 
 const ChatInputSchema = z.object({
   prompt: z.string().describe("The user\'s message to the chatbot."),
@@ -18,7 +16,6 @@ const ChatInputSchema = z.object({
     .array(z.object({role: z.enum(['user', 'model']), content: z.string()}))
     .optional()
     .describe('The history of the conversation.'),
-  doctors: z.array(z.any()).optional().describe('A list of available verified doctors.'),
 });
 export type ChatInput = z.infer<typeof ChatInputSchema>;
 
@@ -35,16 +32,13 @@ const prompt = ai.definePrompt({
   name: 'chatPrompt',
   input: {schema: ChatInputSchema},
   output: {schema: ChatOutputSchema},
-  tools: [findDoctorsTool, bookAppointmentTool, viewAppointmentsTool],
   prompt: `You are a friendly and helpful AI assistant for the TrackWell health monitoring app.
 
-Your goal is to answer user questions about their health data, the app's features, or general health topics. You can also help users find doctors, book appointments, and view their existing appointments.
+Your goal is to answer user questions about their health data, the app's features, or general health topics.
 
 Use the provided conversation history to maintain context.
 
-If the user asks to find a doctor, use the 'findDoctors' tool.
-If the user asks to book an appointment, use the 'bookAppointment' tool. You will likely need to ask clarifying questions to get the required doctorId and date.
-If the user asks to see their appointments, use the 'viewAppointments' tool.
+Do not answer questions about booking, viewing, or managing appointments. Instead, instruct the user to use the "Book Appointment" button.
 
 {{#if history}}
 Conversation History:

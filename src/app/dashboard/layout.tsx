@@ -44,6 +44,8 @@ import { AddFamilyMemberDialog } from '@/components/add-family-member-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { AIChatBot } from '@/components/ai-chat-bot';
 import { useRouter } from 'next/navigation';
+import { AppointmentManager } from '@/components/appointment-manager';
+import { AppointmentReminder } from '@/components/appointment-reminder';
 
 
 function ProfileSwitcher() {
@@ -161,9 +163,12 @@ function ProfileSwitcher() {
 
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
+  const [isAppointmentManagerOpen, setIsAppointmentManagerOpen] = useState(false);
 
   return (
     <>
+    <AppointmentManager open={isAppointmentManagerOpen} onOpenChange={setIsAppointmentManagerOpen} />
+    <AppointmentReminder />
     <div className="flex min-h-screen w-full bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
@@ -178,7 +183,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="#"
+                  href="/dashboard"
                   className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                 >
                   <HeartPulse className="h-5 w-5" />
@@ -186,6 +191,20 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">Dashboard</TooltipContent>
+            </Tooltip>
+             <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                  onClick={() => setIsAppointmentManagerOpen(true)}
+                >
+                  <CalendarPlus className="h-5 w-5" />
+                  <span className="sr-only">Book Appointment</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Book Appointment</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -255,12 +274,20 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               <nav className="grid gap-6 text-lg font-medium">
                 <Logo />
                 <Link
-                  href="#"
+                  href="/dashboard"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <HeartPulse className="h-5 w-5" />
                   Dashboard
                 </Link>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground justify-start text-lg font-medium"
+                  onClick={() => setIsAppointmentManagerOpen(true)}
+                >
+                  <CalendarPlus className="h-5 w-5" />
+                  Book Appointment
+                </Button>
                 <Link
                   href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"

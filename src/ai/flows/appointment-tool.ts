@@ -3,7 +3,17 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-let appointments: { doctorId: number, date: string, patientName: string }[] = [];
+export let appointments: { id: number, doctorId: number, doctorName: string, date: string, time: string, patientName: string, issue: string }[] = [];
+
+// In-memory storage for reminders. In a real app, this would be a persistent job queue.
+let reminderJobs: { [appointmentId: number]: NodeJS.Timeout[] } = {};
+
+const clearReminders = (appointmentId: number) => {
+    if (reminderJobs[appointmentId]) {
+        reminderJobs[appointmentId].forEach(clearTimeout);
+        delete reminderJobs[appointmentId];
+    }
+}
 
 export const findDoctorsTool = ai.defineTool(
   {
@@ -16,16 +26,24 @@ export const findDoctorsTool = ai.defineTool(
         issue: z.string().describe("The user's primary health issue."),
         history: z.string().optional().describe("The user's relevant medical history."),
     }),
-    outputSchema: z.string().describe("A conversational recommendation for a doctor, including their name and specialty. If no suitable doctor is found, this should explain why."),
+    outputSchema: z.object({
+        recommendation: z.string().describe("A conversational recommendation for a doctor, including their name and specialty. If no suitable doctor is found, this should explain why."),
+        recommendedDoctorId: z.number().optional().describe("The ID of the recommended doctor, if one is found."),
+    }),
   },
   async (input) => {
     // In a real app, you would have more complex logic to match doctors.
     // For this example, we'll just recommend the first doctor if symptoms are present.
-    if (input.doctors.length > 0 && input.symptoms) {
+    if (input.doctors.length > 0 && (input.symptoms || input.issue)) {
         const recommendedDoctor = input.doctors[0];
-        return `Based on your symptoms, I recommend Dr. ${recommendedDoctor.name}, who is a specialist in ${recommendedDoctor.specialty}. Would you like to book an appointment with them?`;
+        return {
+            recommendation: `Based on your information, I recommend Dr. ${recommendedDoctor.name}, who is a specialist in ${recommendedDoctor.specialty || 'General Medicine'}.`,
+            recommendedDoctorId: recommendedDoctor.id,
+        }
     }
-    return "I couldn't find a suitable doctor based on the information provided. Please provide more details about your symptoms.";
+    return {
+        recommendation: "I couldn't find a suitable doctor based on the information provided. Please provide more details about your symptoms or issue."
+    };
   }
 );
 
@@ -35,15 +53,28 @@ export const bookAppointmentTool = ai.defineTool(
     description: 'Use this tool to book an appointment with a doctor.',
     inputSchema: z.object({
       doctorId: z.number().describe("The ID of the doctor."),
+      doctorName: z.string().describe("The name of the doctor."),
       date: z.string().describe('The date for the appointment (e.g., "YYYY-MM-DD").'),
+      time: z.string().describe('The time for the appointment (e.g., "HH:MM").'),
       patientName: z.string().describe("The name of the patient."),
+      issue: z.string().describe("The primary health issue for the appointment."),
     }),
-    outputSchema: z.string(),
+    outputSchema: z.object({
+        success: z.boolean(),
+        message: z.string(),
+        appointment: z.any().optional(),
+    }),
   },
   async (input) => {
-    appointments.push(input);
-    console.log('New appointment booked:', input);
-    return `Appointment confirmed for ${input.patientName} with doctor ID ${input.doctorId} on ${input.date}.`;
+    const newAppointment = { ...input, id: Date.now() };
+    appointments.push(newAppointment);
+    console.log('New appointment booked:', newAppointment);
+    
+    return { 
+        success: true,
+        message: `Appointment confirmed for ${input.patientName} with Dr. ${input.doctorName} on ${input.date} at ${input.time}.`,
+        appointment: newAppointment,
+    };
   }
 );
 
@@ -52,15 +83,10 @@ export const viewAppointmentsTool = ai.defineTool(
     name: 'viewAppointments',
     description: "Use this tool to view the user's upcoming appointments.",
     inputSchema: z.object({}),
-    outputSchema: z.string(),
+    outputSchema: z.array(z.any()),
   },
   async () => {
-    if (appointments.length === 0) {
-      return 'You have no upcoming appointments.';
-    }
-    const appointmentList = appointments.map(
-      (appt) => `- Appointment for ${appt.patientName} with doctor ID ${appt.doctorId} on ${appt.date}`
-    ).join('\n');
-    return `Here are your upcoming appointments:\n${appointmentList}`;
+    // In a real app, you would filter by user ID
+    return appointments;
   }
 );
