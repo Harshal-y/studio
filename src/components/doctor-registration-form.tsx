@@ -103,12 +103,12 @@ export function DoctorRegistrationForm() {
       e.stopPropagation();
     };
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        window.addEventListener(eventName, preventDefaults, false)
+        document.body.addEventListener(eventName, preventDefaults, false)
     });
 
     return () => {
        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        window.removeEventListener(eventName, preventDefaults, false)
+        document.body.removeEventListener(eventName, preventDefaults, false)
        });
     };
   }, []);
@@ -129,6 +129,8 @@ export function DoctorRegistrationForm() {
         reader.readAsDataURL(file);
       } else if (file.type === 'application/pdf') {
         setPreview('pdf');
+      } else {
+        setPreview(null);
       }
     } else {
       form.resetField('certificate');
