@@ -2,7 +2,7 @@
 'use client';
 
 import { appointmentFlow } from '@/ai/flows/appointment-flow';
-import { Bot, Download, Send, User, X } from 'lucide-react';
+import { Bot, Download, Paperclip, Send, User, X } from 'lucide-react';
 import { FormEvent, useRef, useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import {
@@ -22,12 +22,14 @@ import { useLocation } from '@/hooks/use-location';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Separator } from './ui/separator';
+import Image from 'next/image';
 
 type Message = {
   role: 'user' | 'model';
   content: string;
   prescription?: any;
   labTest?: any;
+  photoDataUri?: string;
 };
 
 const initialMessages: Message[] = [
@@ -40,8 +42,10 @@ const initialMessages: Message[] = [
 export function AppointmentChatbot() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
+  const [photo, setPhoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const scrollAreaViewportRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { isAppointmentChatbotOpen, setAppointmentChatbotOpen, doctors, currentUser, addPrescription, addLabTest } = useData();
   const { location, error: locationError } = useLocation();
   const { toast } = useToast();
@@ -58,27 +62,33 @@ export function AppointmentChatbot() {
   useEffect(() => {
     if (!isAppointmentChatbotOpen) {
         // Reset to initial state when closed
-        setTimeout(() => setMessages(initialMessages), 300);
+        setTimeout(() => {
+            setMessages(initialMessages);
+            setPhoto(null);
+            setInput('');
+        }, 300);
     }
   }, [isAppointmentChatbotOpen]);
 
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() && !photo) return;
 
     setLoading(true);
-    const userMessage: Message = { role: 'user', content: input };
+    const userMessage: Message = { role: 'user', content: input, photoDataUri: photo || undefined };
     
     const currentMessages = [...messages, userMessage];
     setMessages(currentMessages);
     setInput('');
+    setPhoto(null);
 
     try {
       const result = await appointmentFlow({
         prompt: input,
         doctors: doctors,
         patientName: currentUser?.name,
+        photoDataUri: photo || undefined,
       });
       const modelMessage: Message = { role: 'model', content: result.response, prescription: result.prescription, labTest: result.labTest };
       if (result.prescription) {
@@ -151,10 +161,28 @@ Disclaimer: ${prescription.disclaimer}
     }
   }
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhoto(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   return (
     <Dialog open={isAppointmentChatbotOpen} onOpenChange={setAppointmentChatbotOpen}>
       <DialogContent className="sm:max-w-lg h-[80vh] flex flex-col p-0">
+        <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept="image/*"
+        />
           <DialogHeader className="p-6 pb-2">
             <DialogTitle className="flex items-center gap-2">
                 <Bot className="h-6 w-6 text-primary" />
@@ -188,6 +216,11 @@ Disclaimer: ${prescription.disclaimer}
                           }`}
                         >
                           {message.content}
+                           {message.photoDataUri && (
+                                <div className="mt-2">
+                                <Image src={message.photoDataUri} alt="User upload" width={200} height={200} className="rounded-md" />
+                                </div>
+                            )}
                         </div>
                         {message.role === 'user' && (
                           <User className="h-6 w-6 text-muted-foreground flex-shrink-0" />
@@ -250,15 +283,26 @@ Disclaimer: ${prescription.disclaimer}
               </div>
             </ScrollArea>
           </div>
-          <div className="p-6 pt-2">
+          <div className="p-6 pt-2 border-t">
+             {photo && (
+                <div className="mb-2 relative w-24 h-24">
+                    <Image src={photo} alt="Preview" layout="fill" objectFit="cover" className="rounded-md" />
+                     <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={() => setPhoto(null)}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+            )}
             <form onSubmit={handleSubmit} className="flex w-full items-center gap-2">
+               <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} disabled={loading}>
+                    <Paperclip className="h-5 w-5" />
+                </Button>
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="e.g., 'I have a sore throat...' or 'Prescribe...'"
                 disabled={loading}
               />
-              <Button type="submit" size="icon" disabled={loading}>
+              <Button type="submit" size="icon" disabled={loading || (!input.trim() && !photo)}>
                 <Send className="h-4 w-4" />
               </Button>
             </form>

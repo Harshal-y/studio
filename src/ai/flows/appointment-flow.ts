@@ -24,6 +24,12 @@ const AppointmentFlowInputSchema = z.object({
   doctors: z.array(z.any()).describe('A list of available verified doctors.'),
   prompt: z.string().describe('The user\'s raw text input.'),
   patientName: z.string().optional().describe("The patient's name for the prescription."),
+   photoDataUri: z
+    .string()
+    .optional()
+    .describe(
+      "A photo of a skin condition (e.g., rash), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
 });
 export type AppointmentFlowInput = z.infer<typeof AppointmentFlowInputSchema>;
 
@@ -54,7 +60,7 @@ You have access to several tools:
 - 'viewPrescriptions': Retrieves a list of the user's prescriptions.
 
 Analyze the user's prompt to determine their intent.
-- If they want to find a doctor, use the 'findDoctors' tool.
+- If they want to find a doctor, use the 'findDoctors' tool. If a photo is provided, use it to inform the doctor recommendation (e.g., recommend a dermatologist for a skin rash).
 - If they want to book an appointment, use the 'bookAppointment' tool.
 - If the prompt contains information from a doctor about specific medicines, use the 'generatePrescription' tool. You must have the patient's name, doctor's name, and at least one medication with dosage. If you are missing information, ask for it.
 - If a doctor's prompt includes ordering a lab test (e.g., "order a CBC test"), use the 'orderLabTest' tool.
@@ -64,6 +70,7 @@ Analyze the user's prompt to determine their intent.
 The user's input is:
 {{#if symptoms}}Symptoms: {{{symptoms}}}{{/if}}{#if issue}}Issue: {{{issue}}}{{/if}}{#if history}}Medical History: {{{history}}}{{/if}}
 User's message: {{{prompt}}}
+{{#if photoDataUri}}User has provided a photo for review: {{media url=photoDataUri}}{{/if}}
 Your response should be conversational and helpful.`,
 });
 
