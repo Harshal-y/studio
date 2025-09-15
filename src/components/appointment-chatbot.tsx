@@ -2,7 +2,8 @@
 'use client';
 
 import { appointmentFlow } from '@/ai/flows/appointment-flow';
-import { Bot, Download, Paperclip, Send, User, X } from 'lucide-react';
+import { translateText } from '@/ai/flows/translate-text-flow';
+import { Bot, Download, Languages, Paperclip, Send, User, X } from 'lucide-react';
 import { FormEvent, useRef, useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import {
@@ -23,6 +24,12 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Separator } from './ui/separator';
 import Image from 'next/image';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 
 type Message = {
   role: 'user' | 'model';
@@ -38,6 +45,99 @@ const initialMessages: Message[] = [
         content: "Hi there! I can help you find a doctor, generate a prescription, or order a lab test based on your doctor's instructions. How can I help?"
     }
 ]
+
+function PrescriptionCard({ prescription, onDownload, onFindNearby }: { prescription: any, onDownload: (p: any) => void, onFindNearby: (t: 'pharmacy' | 'labs') => void }) {
+    const [translatedMeds, setTranslatedMeds] = useState<any[] | null>(null);
+    const [isTranslating, setIsTranslating] = useState(false);
+    const { toast } = useToast();
+    
+    const languages = ["Spanish", "Hindi", "French", "German", "Mandarin"];
+
+    const handleTranslate = async (language: string) => {
+        setIsTranslating(true);
+        try {
+            const medicationsText = prescription.medications.map((med: any) => `- ${med.name} ${med.dosage} - ${med.frequency}`).join('\n');
+            const result = await translateText({
+                text: medicationsText,
+                targetLanguage: language
+            });
+            const translatedLines = result.translatedText.split('\n');
+
+            // This is a simple parser. It might not be perfect for all languages.
+            const newTranslatedMeds = translatedLines.map((line, index) => {
+                const originalMed = prescription.medications[index];
+                // Remove the leading '-' if it exists
+                const cleanedLine = line.startsWith('- ') ? line.substring(2) : line;
+                return {
+                    ...originalMed,
+                    translatedLine: cleanedLine
+                };
+            });
+
+            setTranslatedMeds(newTranslatedMeds);
+        } catch (error) {
+            console.error("Translation error:", error);
+            toast({ variant: 'destructive', title: 'Translation failed', description: 'Could not translate the prescription.' });
+        } finally {
+            setIsTranslating(false);
+        }
+    };
+    
+    const displayedMeds = translatedMeds || prescription.medications;
+
+    return (
+        <Card className="max-w-[80%] w-full">
+            <CardHeader>
+                <CardTitle className="text-base">Prescription Generated</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+                <p><span className="font-semibold">Patient:</span> {prescription.patientName}</p>
+                <p><span className="font-semibold">Doctor:</span> {prescription.doctorName}</p>
+                <p className="font-semibold mt-2">Medications:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                    {displayedMeds.map((med: any, i: number) => (
+                        <li key={i}>
+                            {translatedMeds ? med.translatedLine : `${med.name} ${med.dosage} - ${med.frequency}`}
+                        </li>
+                    ))}
+                </ul>
+                {isTranslating && <Skeleton className="h-5 w-full mt-1" />}
+
+                <div className="flex gap-2 pt-4">
+                    <Button className="flex-1" variant="outline" onClick={() => onDownload(prescription)}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button className="flex-1" variant="outline" disabled={isTranslating}>
+                                <Languages className="mr-2 h-4 w-4" />
+                                {isTranslating ? 'Translating...' : 'Translate'}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            {languages.map(lang => (
+                                <DropdownMenuItem key={lang} onSelect={() => handleTranslate(lang)}>
+                                    {lang}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+
+                <Separator className="my-4" />
+                <div className="grid grid-cols-2 gap-2">
+                    <Button asChild>
+                        <Link href="https://www.1mg.com" target="_blank">Order Online</Link>
+                    </Button>
+                     <Button onClick={() => onFindNearby('pharmacy')}>
+                        Find Nearby
+                     </Button>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
 
 export function AppointmentChatbot() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -227,34 +327,11 @@ Disclaimer: ${prescription.disclaimer}
                         )}
                     </div>
                     {message.prescription && (
-                        <Card className="max-w-[80%] w-full">
-                            <CardHeader>
-                                <CardTitle className="text-base">Prescription Generated</CardTitle>
-                            </CardHeader>
-                            <CardContent className="text-sm space-y-2">
-                                <p><span className="font-semibold">Patient:</span> {message.prescription.patientName}</p>
-                                <p><span className="font-semibold">Doctor:</span> {message.prescription.doctorName}</p>
-                                <p className="font-semibold mt-2">Medications:</p>
-                                <ul className="list-disc pl-5">
-                                    {message.prescription.medications.map((med: any, i: number) => (
-                                        <li key={i}>{med.name} {med.dosage} - {med.frequency}</li>
-                                    ))}
-                                </ul>
-                                <Button className="mt-4 w-full" variant="outline" onClick={() => downloadPrescription(message.prescription)}>
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Download Prescription
-                                </Button>
-                                <Separator className="my-4" />
-                                <div className="grid grid-cols-2 gap-2">
-                                    <Button asChild>
-                                        <Link href="https://www.1mg.com" target="_blank">Order Online</Link>
-                                    </Button>
-                                     <Button onClick={() => handleFindNearby('pharmacy')}>
-                                        Find Nearby
-                                     </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <PrescriptionCard 
+                            prescription={message.prescription} 
+                            onDownload={downloadPrescription}
+                            onFindNearby={handleFindNearby}
+                        />
                     )}
                     {message.labTest && (
                          <Card className="max-w-[80%] w-full">
