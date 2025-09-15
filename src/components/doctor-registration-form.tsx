@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,6 +15,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState, ChangeEvent } from 'react';
@@ -24,31 +32,42 @@ import { useData } from '@/contexts/data-provider';
 import Image from 'next/image';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_IMAGE_TYPES = [
+const ACCEPTED_FILE_TYPES = [
   'image/jpeg',
   'image/jpg',
   'image/png',
   'image/webp',
+  'application/pdf',
 ];
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
-  degree: z.string().min(2, 'Degree is required.'),
+  degree: z.string().min(2, 'A degree must be selected.'),
   experience: z.coerce
     .number()
-    .min(0, 'Experience must be a positive number.'),
+    .min(0, 'Experience must be a non-negative number.'),
   certificate: z
     .any()
-    .refine((files) => files?.length == 1, 'Certificate image is required.')
+    .refine((files) => files?.length == 1, 'Certificate file is required.')
     .refine(
       (files) => files?.[0]?.size <= MAX_FILE_SIZE,
       `Max file size is 5MB.`
     )
     .refine(
-      (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
-      '.jpg, .jpeg, .png and .webp files are accepted.'
+      (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
+      'Only .jpg, .jpeg, .png, .webp, and .pdf files are accepted.'
     ),
 });
+
+const doctorDegrees = [
+    'MD (Doctor of Medicine)',
+    'DO (Doctor of Osteopathic Medicine)',
+    'MBBS (Bachelor of Medicine, Bachelor of Surgery)',
+    'PhD (Doctor of Philosophy)',
+    'DDS (Doctor of Dental Surgery)',
+    'DVM (Doctor of Veterinary Medicine)',
+    'Other'
+];
 
 export function DoctorRegistrationForm() {
   const router = useRouter();
@@ -71,11 +90,16 @@ export function DoctorRegistrationForm() {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        } else if (file.type === 'application/pdf') {
+            // For PDFs, we just show a generic icon or file name, not a preview.
+            setPreview('pdf'); // Special value to indicate a PDF is selected
+        }
     } else {
       setPreview(null);
     }
@@ -93,6 +117,9 @@ export function DoctorRegistrationForm() {
         throw new Error(uploadError || 'Failed to upload certificate.');
       }
       
+      // Simulate verification delay
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 3000 + 2000));
+
       const verificationResult = await verifyDoctorCertificate({ certificateDataUri: fileDataUri });
 
       if (verificationResult.isVerified) {
@@ -106,14 +133,14 @@ export function DoctorRegistrationForm() {
         });
         toast({
           title: 'Verification Successful!',
-          description: 'Your profile has been verified and added to our network.',
+          description: 'Your profile has been verified and added. Redirecting...',
         });
          setTimeout(() => router.push('/dashboard'), 3000);
       } else {
         toast({
           variant: 'destructive',
           title: 'Verification Failed',
-          description: verificationResult.reason || 'Could not verify the certificate. Please try again with a clear image.',
+          description: verificationResult.reason || 'Could not verify the certificate. Please try again with a clear file.',
         });
       }
     } catch (error) {
@@ -154,9 +181,18 @@ export function DoctorRegistrationForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Highest Degree</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., MD, MBBS" {...field} />
-                </FormControl>
+                 <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a degree" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {doctorDegrees.map(degree => (
+                        <SelectItem key={degree} value={degree}>{degree}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -168,7 +204,7 @@ export function DoctorRegistrationForm() {
               <FormItem>
                 <FormLabel>Years of Experience</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="e.g., 10" {...field} />
+                  <Input type="number" min="0" placeholder="e.g., 10" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -181,7 +217,7 @@ export function DoctorRegistrationForm() {
           name="certificate"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Medical Certificate</FormLabel>
+              <FormLabel>Medical License/Certificate</FormLabel>
               <FormControl>
                 <div className="relative flex justify-center items-center w-full h-48 border-2 border-dashed rounded-md border-muted-foreground/50 hover:border-primary transition-colors">
                     <Input 
@@ -189,15 +225,21 @@ export function DoctorRegistrationForm() {
                         className="absolute w-full h-full opacity-0 cursor-pointer"
                         {...fileRef}
                         onChange={handleFileChange}
-                        accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                        accept={ACCEPTED_FILE_TYPES.join(',')}
                     />
-                    {preview ? (
-                         <Image src={preview} alt="Certificate Preview" fill objectFit="contain" className="rounded-md" />
+                    {preview === 'pdf' ? (
+                        <div className="text-center text-muted-foreground flex flex-col items-center">
+                            <UploadCloud className="w-8 h-8 mb-2 text-primary" />
+                            <p>PDF file selected</p>
+                            <p className="text-xs">{form.getValues('certificate')?.[0]?.name}</p>
+                        </div>
+                    ) : preview ? (
+                         <Image src={preview} alt="Certificate Preview" layout="fill" objectFit="contain" className="rounded-md" />
                     ) : (
                         <div className="text-center text-muted-foreground flex flex-col items-center">
                             <UploadCloud className="w-8 h-8 mb-2" />
                             <p>Click to upload or drag & drop</p>
-                            <p className="text-xs">PNG, JPG, WEBP (max 5MB)</p>
+                            <p className="text-xs">Image or PDF (max 5MB)</p>
                         </div>
                     )}
                 </div>
