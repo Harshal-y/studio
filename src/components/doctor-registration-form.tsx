@@ -194,7 +194,7 @@ export function DoctorRegistrationForm() {
           description:
             'Your profile has been verified and added. Redirecting...',
         });
-        setTimeout(() => router.push('/dashboard'), 3000);
+        setTimeout(() => router.push('/doctor-portal'), 3000);
       } else {
         toast({
           variant: 'destructive',
@@ -337,7 +337,7 @@ export function DoctorRegistrationForm() {
                   ) : (
                     <div className="text-center text-muted-foreground flex flex-col items-center pointer-events-none">
                       <UploadCloud className="w-8 h-8 mb-2" />
-                      <p>Click to upload or drag &amp; drop</p>
+                      <p>Click to upload or drag & drop</p>
                       <p className="text-xs">Image or PDF (max 5MB)</p>
                     </div>
                   )}
