@@ -140,7 +140,7 @@ function PrescriptionCard({ prescription, onDownload, onFindNearby }: { prescrip
                     <p className="text-sm font-semibold">Get Your Medicines</p>
                     <div className="grid grid-cols-2 gap-2">
                         <Button asChild>
-                            <Link href="https://www.1mg.com" target="_blank">Order Online</Link>
+                            <Link href="https://www.1mg.com" target="_blank">Order from E-Pharmacy</Link>
                         </Button>
                         <Button variant="secondary" onClick={() => onFindNearby('pharmacy')}>
                             Find Nearby
