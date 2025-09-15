@@ -98,16 +98,18 @@ export function DoctorRegistrationForm() {
   });
   
   useEffect(() => {
-    const preventDefaults = (e: DragEvent) => {
+    const preventDefaults = (e: Event) => {
       e.preventDefault();
       e.stopPropagation();
     };
-    window.addEventListener('dragover', preventDefaults, false);
-    window.addEventListener('drop', preventDefaults, false);
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        window.addEventListener(eventName, preventDefaults, false)
+    });
 
     return () => {
-      window.removeEventListener('dragover', preventDefaults, false);
-      window.removeEventListener('drop', preventDefaults, false);
+       ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        window.removeEventListener(eventName, preventDefaults, false)
+       });
     };
   }, []);
 
