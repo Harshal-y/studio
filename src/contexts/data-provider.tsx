@@ -37,6 +37,7 @@ export type User = {
   devices: Device[];
   vitals: VitalsState;
   historicalData: HistoricalData[];
+  isMonitored?: boolean;
 };
 
 export type Doctor = {
@@ -65,6 +66,8 @@ interface DataContextType {
   setCurrentUser: (user: User) => void;
   familyMembers: User[];
   addFamilyMember: (member: User) => void;
+  allUsers: User[];
+  toggleMonitoring: (userId: number) => void;
   devices: Device[];
   vitals: VitalsState | null;
   historicalData: HistoricalData[] | null;
@@ -87,6 +90,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [selfUser, setSelfUser] = useState<User | null>(defaultSelfUser);
   const [currentUser, setCurrentUser] = useState<User | null>(defaultSelfUser);
   const [familyMembers, setFamilyMembers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>(allFamilyMembers);
   const [devices, setDevices] = useState<Device[]>([]);
   const [vitals, setVitals] = useState<VitalsState | null>(null);
   const [historicalData, setHistoricalData] = useState<HistoricalData[] | null>(
@@ -173,6 +177,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!familyMembers.some(m => m.id === member.id)) {
       setFamilyMembers(prev => [...prev, member]);
     }
+     if (!allUsers.some(m => m.id === member.id)) {
+      setAllUsers(prev => [...prev, member]);
+    }
   };
 
   const addDoctor = (doctor: Doctor) => {
@@ -185,12 +192,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setAppointments(prev => [...prev, appointment]);
   }
 
+  const toggleMonitoring = (userId: number) => {
+    setAllUsers(prevUsers => 
+        prevUsers.map(user => 
+            user.id === userId ? { ...user, isMonitored: !user.isMonitored } : user
+        )
+    )
+  }
+
   const value = {
     currentUser,
     selfUser,
     setCurrentUser,
     familyMembers,
     addFamilyMember,
+    allUsers,
+    toggleMonitoring,
     devices,
     vitals,
     historicalData,

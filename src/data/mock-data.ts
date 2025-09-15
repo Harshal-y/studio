@@ -45,6 +45,7 @@ export const selfUser: User = {
   name: 'John Doe',
   email: 'john.doe@email.com',
   avatar: 'https://picsum.photos/seed/1/100/100',
+  isMonitored: false,
   devices: [
     {
       id: 1,
@@ -73,6 +74,7 @@ export const allFamilyMembers: User[] = [
     email: 'jane.doe@email.com',
     avatar: 'https://picsum.photos/seed/2/100/100',
     deviceCode: 'JANE-456',
+    isMonitored: true,
     devices: [
       {
         id: 3,
@@ -94,6 +96,7 @@ export const allFamilyMembers: User[] = [
     email: 'junior.doe@email.com',
     avatar: 'https://picsum.photos/seed/3/100/100',
     deviceCode: 'JUNIOR-123',
+    isMonitored: false,
     devices: [
        {
         id: 4,

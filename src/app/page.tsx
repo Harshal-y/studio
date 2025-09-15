@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Hospital, Stethoscope, User } from 'lucide-react';
+import { Hospital, Stethoscope, User, HeartPulse } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
 
@@ -33,6 +33,12 @@ export default function LandingPage() {
               <Button size="lg">
                 <User className="mr-2" />
                 Individual User
+              </Button>
+            </Link>
+             <Link href="/doctor-portal" passHref>
+              <Button size="lg" variant="secondary">
+                <HeartPulse className="mr-2" />
+                Doctor Portal
               </Button>
             </Link>
             <Link href="/register-doctor" passHref>
