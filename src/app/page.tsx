@@ -35,7 +35,7 @@ export default function LandingPage() {
                 Individual User
               </Button>
             </Link>
-            <Link href="/doctor-portal" passHref>
+            <Link href="/register-doctor" passHref>
               <Button size="lg" variant="secondary">
                 <Stethoscope className="mr-2" />
                 For Medical Professionals
