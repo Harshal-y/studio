@@ -35,16 +35,10 @@ export default function LandingPage() {
                 Individual User
               </Button>
             </Link>
-             <Link href="/doctor-portal" passHref>
-              <Button size="lg" variant="secondary">
-                <HeartPulse className="mr-2" />
-                Doctor Portal
-              </Button>
-            </Link>
             <Link href="/register-doctor" passHref>
               <Button size="lg" variant="secondary">
                 <Stethoscope className="mr-2" />
-                Consulting Doctor
+                For Medical Professionals
               </Button>
             </Link>
             <Link href="/dashboard" passHref>
