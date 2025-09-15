@@ -38,6 +38,7 @@ export type User = {
   vitals: VitalsState;
   historicalData: HistoricalData[];
   isMonitored?: boolean;
+  points: number;
 };
 
 export type Doctor = {
@@ -48,6 +49,7 @@ export type Doctor = {
     isVerified: boolean;
     verificationDetails?: any;
     specialty?: string;
+    points: number;
 };
 
 export type Appointment = {
@@ -193,6 +195,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
   
   const addAppointment = (appointment: Appointment) => {
       setAppointments(prev => [...prev, appointment]);
+
+      // Award points
+      if (currentUser) {
+        setCurrentUser({...currentUser, points: (currentUser.points || 0) + 10});
+        setSelfUser(prev => prev ? {...prev, points: (prev.points || 0) + 10} : null);
+      }
+      setDoctors(prevDocs => prevDocs.map(d => d.id === appointment.doctorId ? { ...d, points: (d.points || 0) + 20 } : d));
+      if (currentDoctor && currentDoctor.id === appointment.doctorId) {
+        setCurrentDoctor(prev => prev ? { ...prev, points: (prev.points || 0) + 20 } : null);
+      }
   }
 
   const toggleMonitoring = (userId: number) => {

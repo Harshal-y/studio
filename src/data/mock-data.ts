@@ -46,6 +46,7 @@ export const selfUser: User = {
   email: 'john.doe@email.com',
   avatar: 'https://picsum.photos/seed/1/100/100',
   isMonitored: false,
+  points: 120,
   devices: [
     {
       id: 1,
@@ -75,6 +76,7 @@ export const allFamilyMembers: User[] = [
     avatar: 'https://picsum.photos/seed/2/100/100',
     deviceCode: 'JANE-456',
     isMonitored: true,
+    points: 80,
     devices: [
       {
         id: 3,
@@ -97,6 +99,7 @@ export const allFamilyMembers: User[] = [
     avatar: 'https://picsum.photos/seed/3/100/100',
     deviceCode: 'JUNIOR-123',
     isMonitored: false,
+    points: 20,
     devices: [
        {
         id: 4,
@@ -129,6 +132,7 @@ export const allDoctors: Doctor[] = [
         experience: 15,
         isVerified: true,
         specialty: 'Cardiology',
+        points: 250,
     },
     {
         id: 2,
@@ -137,6 +141,7 @@ export const allDoctors: Doctor[] = [
         experience: 8,
         isVerified: true,
         specialty: 'Dermatology',
+        points: 180,
     }
 ];
 

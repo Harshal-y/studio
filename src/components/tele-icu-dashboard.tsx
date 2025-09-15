@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useData, User, VitalsState, Doctor } from "@/contexts/data-provider";
@@ -6,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Switch } from "./ui/switch";
-import { Droplets, Heart, HeartPulse, Monitor, Thermometer, Waves, CalendarDays } from "lucide-react";
+import { Droplets, Heart, HeartPulse, Monitor, Thermometer, Waves, CalendarDays, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 import { useEffect, useState } from "react";
@@ -166,7 +167,10 @@ export function TeleIcuDashboard() {
                     {currentDoctor && (
                         <div className="text-right">
                             <p className="font-semibold">{currentDoctor.name}</p>
-                            <p className="text-sm text-muted-foreground">{currentDoctor.specialty}</p>
+                            <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
+                                <span className="font-semibold text-foreground">{currentDoctor.points || 0}</span>
+                                <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                            </div>
                         </div>
                     )}
                     <Button variant="outline" onClick={() => setIsProfileDialogOpen(true)}>Update Profile</Button>
