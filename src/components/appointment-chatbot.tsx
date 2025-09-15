@@ -18,6 +18,10 @@ import { Skeleton } from './ui/skeleton';
 import { useData } from '@/contexts/data-provider';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { format } from 'date-fns';
+import { useLocation } from '@/hooks/use-location';
+import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
+import { Separator } from './ui/separator';
 
 type Message = {
   role: 'user' | 'model';
@@ -38,6 +42,8 @@ export function AppointmentChatbot() {
   const [loading, setLoading] = useState(false);
   const scrollAreaViewportRef = useRef<HTMLDivElement>(null);
   const { isAppointmentChatbotOpen, setAppointmentChatbotOpen, doctors, currentUser, currentDoctor } = useData();
+  const { location, error: locationError } = useLocation();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (scrollAreaViewportRef.current) {
@@ -117,6 +123,26 @@ Disclaimer: ${prescription.disclaimer}
     URL.revokeObjectURL(url);
   };
 
+  const handleFindNearby = () => {
+    if (locationError) {
+        toast({
+            variant: 'destructive',
+            title: 'Location Error',
+            description: locationError
+        });
+        return;
+    }
+    if (location) {
+        const url = `https://www.google.com/maps/search/pharmacy/@${location.latitude},${location.longitude},15z`;
+        window.open(url, '_blank');
+    } else {
+         toast({
+            title: 'Finding Location...',
+            description: 'Please wait while we determine your location.'
+        });
+    }
+  }
+
 
   return (
     <Dialog open={isAppointmentChatbotOpen} onOpenChange={setAppointmentChatbotOpen}>
@@ -173,10 +199,19 @@ Disclaimer: ${prescription.disclaimer}
                                         <li key={i}>{med.name} {med.dosage} - {med.frequency}</li>
                                     ))}
                                 </ul>
-                                <Button className="mt-4 w-full" onClick={() => downloadPrescription(message.prescription)}>
+                                <Button className="mt-4 w-full" variant="outline" onClick={() => downloadPrescription(message.prescription)}>
                                     <Download className="mr-2 h-4 w-4" />
                                     Download Prescription
                                 </Button>
+                                <Separator className="my-4" />
+                                <div className="grid grid-cols-2 gap-2">
+                                    <Button asChild>
+                                        <Link href="https://www.1mg.com" target="_blank">Order Online</Link>
+                                    </Button>
+                                     <Button onClick={handleFindNearby}>
+                                        Find Nearby
+                                     </Button>
+                                </div>
                             </CardContent>
                         </Card>
                     )}
