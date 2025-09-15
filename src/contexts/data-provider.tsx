@@ -76,6 +76,8 @@ interface DataContextType {
   toggleDeviceConnection: (deviceId: number) => void;
   doctors: Doctor[];
   addDoctor: (doctor: Doctor) => void;
+  currentDoctor: Doctor | null;
+  updateCurrentDoctor: (doctor: Partial<Doctor>) => void;
   appointments: Appointment[];
   addAppointment: (appointment: Appointment) => void;
   isChatbotOpen: boolean;
@@ -97,6 +99,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     null
   );
   const [doctors, setDoctors] = useState<Doctor[]>(allDoctors);
+  const [currentDoctor, setCurrentDoctor] = useState<Doctor | null>(allDoctors[0] || null);
   const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
   const [isChatbotOpen, setChatbotOpen] = useState(false);
   const [isAppointmentChatbotOpen, setAppointmentChatbotOpen] = useState(false);
@@ -200,6 +203,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     )
   }
 
+  const updateCurrentDoctor = (doctorUpdate: Partial<Doctor>) => {
+    if (currentDoctor) {
+        setCurrentDoctor(prev => prev ? { ...prev, ...doctorUpdate } : null);
+        setDoctors(prevDocs => prevDocs.map(d => d.id === currentDoctor.id ? { ...d, ...doctorUpdate } : d));
+    }
+  }
+
   const value = {
     currentUser,
     selfUser,
@@ -216,6 +226,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     toggleDeviceConnection,
     doctors,
     addDoctor,
+    currentDoctor,
+    updateCurrentDoctor,
     appointments,
     addAppointment,
     isChatbotOpen,
