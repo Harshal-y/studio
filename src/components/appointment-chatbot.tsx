@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { appointmentFlow } from '@/ai/flows/appointment-flow';
 import { translateText } from '@/ai/flows/translate-text-flow';
-import { Bot, Download, Languages, Paperclip, Send, User, X } from 'lucide-react';
+import { Bot, Download, Languages, Paperclip, Send, User, X, CheckCircle } from 'lucide-react';
 import { FormEvent, useRef, useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import {
@@ -49,6 +50,7 @@ const initialMessages: Message[] = [
 function PrescriptionCard({ prescription, onDownload, onFindNearby }: { prescription: any, onDownload: (p: any) => void, onFindNearby: (t: 'pharmacy' | 'labs') => void }) {
     const [translatedMeds, setTranslatedMeds] = useState<any[] | null>(null);
     const [isTranslating, setIsTranslating] = useState(false);
+    const [isSubscribed, setIsSubscribed] = useState(false);
     const { toast } = useToast();
     
     const languages = ["Spanish", "Hindi", "French", "German", "Mandarin"];
@@ -82,6 +84,14 @@ function PrescriptionCard({ prescription, onDownload, onFindNearby }: { prescrip
             setIsTranslating(false);
         }
     };
+    
+    const handleSubscribe = () => {
+        setIsSubscribed(true);
+        toast({
+            title: 'Subscription Confirmed!',
+            description: 'Your medicines will be auto-delivered on schedule.'
+        });
+    }
     
     const displayedMeds = translatedMeds || prescription.medications;
 
@@ -126,13 +136,29 @@ function PrescriptionCard({ prescription, onDownload, onFindNearby }: { prescrip
                 </div>
 
                 <Separator className="my-4" />
-                <div className="grid grid-cols-2 gap-2">
-                    <Button asChild>
-                        <Link href="https://www.1mg.com" target="_blank">Order Online</Link>
+                <div className="space-y-2">
+                    <p className="text-sm font-semibold">Get Your Medicines</p>
+                    <div className="grid grid-cols-2 gap-2">
+                        <Button asChild>
+                            <Link href="https://www.1mg.com" target="_blank">Order Online</Link>
+                        </Button>
+                        <Button variant="secondary" onClick={() => onFindNearby('pharmacy')}>
+                            Find Nearby
+                        </Button>
+                    </div>
+                     <Button
+                        className="w-full"
+                        variant={isSubscribed ? "secondary" : "default"}
+                        onClick={handleSubscribe}
+                        disabled={isSubscribed}
+                    >
+                        {isSubscribed ? (
+                            <>
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Subscribed for Auto-Delivery
+                            </>
+                        ) : 'Subscribe for Auto-Delivery'}
                     </Button>
-                     <Button onClick={() => onFindNearby('pharmacy')}>
-                        Find Nearby
-                     </Button>
                 </div>
             </CardContent>
         </Card>
