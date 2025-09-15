@@ -2,17 +2,18 @@
 
 'use client';
 
-import { useData, User, VitalsState, Doctor } from "@/contexts/data-provider";
+import { useData, User, VitalsState, Doctor, Appointment, Prescription, LabTest } from "@/contexts/data-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Switch } from "./ui/switch";
-import { Droplets, Heart, HeartPulse, Monitor, Thermometer, Waves, CalendarDays, Star } from "lucide-react";
+import { Droplets, Heart, HeartPulse, Monitor, Thermometer, Waves, CalendarDays, Star, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 import { useEffect, useState } from "react";
 import { DoctorProfileDialog } from "./doctor-profile-dialog";
 import { format } from "date-fns";
+import { MedicalHistoryDialog } from "./medical-history-dialog";
 
 const iconMap = {
   heartRate: Heart,
@@ -57,7 +58,7 @@ function VitalsGrid({ vitals }: { vitals: VitalsState }) {
     )
 }
 
-function PatientCard({ patient, onToggleMonitor }: { patient: User, onToggleMonitor: (id: number) => void }) {
+function PatientCard({ patient, onToggleMonitor, onOpenHistory }: { patient: User, onToggleMonitor: (id: number) => void, onOpenHistory: (patient: User) => void }) {
     const [currentVitals, setCurrentVitals] = useState(patient.vitals);
 
     useEffect(() => {
@@ -99,7 +100,7 @@ function PatientCard({ patient, onToggleMonitor }: { patient: User, onToggleMoni
 
     return (
         <Card className={cn(
-            "transition-all",
+            "transition-all flex flex-col",
             patient.isMonitored && "ring-2 ring-primary",
             patient.isMonitored && isCritical(currentVitals) && "ring-destructive animate-pulse"
             )}>
@@ -125,7 +126,7 @@ function PatientCard({ patient, onToggleMonitor }: { patient: User, onToggleMoni
                     </div>
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-grow">
                 {patient.isMonitored ? (
                     <VitalsGrid vitals={currentVitals} />
                 ) : (
@@ -133,6 +134,12 @@ function PatientCard({ patient, onToggleMonitor }: { patient: User, onToggleMoni
                         <p>Enable monitoring to see live vitals.</p>
                     </div>
                 )}
+            </CardContent>
+             <CardContent>
+                <Button variant="outline" className="w-full" onClick={() => onOpenHistory(patient)}>
+                    <History className="mr-2 h-4 w-4" />
+                    View History
+                </Button>
             </CardContent>
         </Card>
     )
@@ -150,16 +157,25 @@ const formatTime12h = (time24: string) => {
 export function TeleIcuDashboard() {
     const { allUsers, toggleMonitoring, currentDoctor, appointments } = useData();
     const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+    const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+    const [selectedPatient, setSelectedPatient] = useState<User | null>(null);
 
     const monitoredPatients = allUsers.filter(u => u.isMonitored);
     const otherPatients = allUsers.filter(u => !u.isMonitored);
 
     const doctorAppointments = appointments.filter(appt => appt.doctorId === currentDoctor?.id);
 
+    const handleOpenHistory = (patient: User) => {
+        setSelectedPatient(patient);
+        setIsHistoryDialogOpen(true);
+    }
+
 
     return (
         <>
         <DoctorProfileDialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen} />
+        {selectedPatient && <MedicalHistoryDialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen} patient={selectedPatient} />}
+
         <div className="p-4 sm:p-6 md:p-8">
             <header className="flex items-center justify-between pb-4 border-b">
                 <Logo />
@@ -184,7 +200,7 @@ export function TeleIcuDashboard() {
                         {monitoredPatients.length > 0 ? (
                             <div className="grid gap-6 md:grid-cols-2">
                                 {monitoredPatients.map(patient => (
-                                    <PatientCard key={patient.id} patient={patient} onToggleMonitor={toggleMonitoring} />
+                                    <PatientCard key={patient.id} patient={patient} onToggleMonitor={toggleMonitoring} onOpenHistory={handleOpenHistory} />
                                 ))}
                             </div>
                         ) : (
@@ -196,7 +212,7 @@ export function TeleIcuDashboard() {
                         <h2 className="text-xl font-semibold mb-4">All Patients</h2>
                         <div className="grid gap-6 md:grid-cols-2">
                             {otherPatients.map(patient => (
-                            <PatientCard key={patient.id} patient={patient} onToggleMonitor={toggleMonitoring} />
+                            <PatientCard key={patient.id} patient={patient} onToggleMonitor={toggleMonitoring} onOpenHistory={handleOpenHistory} />
                             ))}
                         </div>
                     </section>
