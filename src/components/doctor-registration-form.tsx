@@ -40,33 +40,44 @@ const ACCEPTED_FILE_TYPES = [
   'application/pdf',
 ];
 
-const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters.'),
-  degree: z.string().min(2, 'A degree must be selected.'),
-  experience: z.coerce
-    .number()
-    .min(0, 'Experience must be a non-negative number.'),
-  certificate: z
-    .any()
-    .refine((files) => files?.length == 1, 'Certificate file is required.')
-    .refine(
-      (files) => files?.[0]?.size <= MAX_FILE_SIZE,
-      `Max file size is 5MB.`
-    )
-    .refine(
-      (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
-      'Only .jpg, .jpeg, .png, .webp, and .pdf files are accepted.'
-    ),
-});
+const formSchema = z
+  .object({
+    name: z.string().min(2, 'Name must be at least 2 characters.'),
+    degree: z.string().min(1, 'A degree must be selected.'),
+    otherDegree: z.string().optional(),
+    experience: z.coerce
+      .number()
+      .min(0, 'Experience must be a non-negative number.'),
+    certificate: z
+      .any()
+      .refine((files) => files?.length == 1, 'Certificate file is required.')
+      .refine(
+        (files) => files?.[0]?.size <= MAX_FILE_SIZE,
+        `Max file size is 5MB.`
+      )
+      .refine(
+        (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
+        'Only .jpg, .jpeg, .png, .webp, and .pdf files are accepted.'
+      ),
+  })
+  .superRefine((data, ctx) => {
+    if (data.degree === 'Other' && !data.otherDegree) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['otherDegree'],
+        message: 'Please specify your degree.',
+      });
+    }
+  });
 
 const doctorDegrees = [
-    'MD (Doctor of Medicine)',
-    'DO (Doctor of Osteopathic Medicine)',
-    'MBBS (Bachelor of Medicine, Bachelor of Surgery)',
-    'PhD (Doctor of Philosophy)',
-    'DDS (Doctor of Dental Surgery)',
-    'DVM (Doctor of Veterinary Medicine)',
-    'Other'
+  'MD (Doctor of Medicine)',
+  'DO (Doctor of Osteopathic Medicine)',
+  'MBBS (Bachelor of Medicine, Bachelor of Surgery)',
+  'PhD (Doctor of Philosophy)',
+  'DDS (Doctor of Dental Surgery)',
+  'DVM (Doctor of Veterinary Medicine)',
+  'Other',
 ];
 
 export function DoctorRegistrationForm() {
@@ -81,11 +92,13 @@ export function DoctorRegistrationForm() {
     defaultValues: {
       name: '',
       degree: '',
+      otherDegree: '',
       experience: 0,
     },
   });
 
   const { isSubmitting } = form.formState;
+  const watchedDegree = form.watch('degree');
 
   const handleFileSelect = (file: File | null) => {
     if (file) {
@@ -110,7 +123,7 @@ export function DoctorRegistrationForm() {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     handleFileSelect(e.target.files?.[0] || null);
   };
-  
+
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -131,36 +144,46 @@ export function DoctorRegistrationForm() {
     formData.append('certificate', values.certificate[0]);
 
     try {
-      const { fileDataUri, error: uploadError } = await uploadCertificate(formData);
+      const { fileDataUri, error: uploadError } =
+        await uploadCertificate(formData);
 
       if (uploadError || !fileDataUri) {
         throw new Error(uploadError || 'Failed to upload certificate.');
       }
-      
-      // Simulate verification delay
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 3000 + 2000));
 
-      const verificationResult = await verifyDoctorCertificate({ certificateDataUri: fileDataUri });
+      // Simulate verification delay
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.random() * 3000 + 2000)
+      );
+
+      const verificationResult = await verifyDoctorCertificate({
+        certificateDataUri: fileDataUri,
+      });
 
       if (verificationResult.isVerified) {
+        const finalDegree =
+          values.degree === 'Other' ? values.otherDegree! : values.degree;
         addDoctor({
-            id: Date.now(),
-            name: values.name,
-            degree: values.degree,
-            experience: values.experience,
-            isVerified: true,
-            verificationDetails: verificationResult.extractedInfo
+          id: Date.now(),
+          name: values.name,
+          degree: finalDegree,
+          experience: values.experience,
+          isVerified: true,
+          verificationDetails: verificationResult.extractedInfo,
         });
         toast({
           title: 'Verification Successful!',
-          description: 'Your profile has been verified and added. Redirecting...',
+          description:
+            'Your profile has been verified and added. Redirecting...',
         });
-         setTimeout(() => router.push('/dashboard'), 3000);
+        setTimeout(() => router.push('/dashboard'), 3000);
       } else {
         toast({
           variant: 'destructive',
           title: 'Verification Failed',
-          description: verificationResult.reason || 'Could not verify the certificate. Please try again with a clear file.',
+          description:
+            verificationResult.reason ||
+            'Could not verify the certificate. Please try again with a clear file.',
         });
       }
     } catch (error) {
@@ -175,7 +198,7 @@ export function DoctorRegistrationForm() {
       setIsVerifying(false);
     }
   }
-  
+
   const fileRef = form.register('certificate');
 
   return (
@@ -201,15 +224,20 @@ export function DoctorRegistrationForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Highest Degree</FormLabel>
-                 <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a degree" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {doctorDegrees.map(degree => (
-                        <SelectItem key={degree} value={degree}>{degree}</SelectItem>
+                    {doctorDegrees.map((degree) => (
+                      <SelectItem key={degree} value={degree}>
+                        {degree}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -224,13 +252,34 @@ export function DoctorRegistrationForm() {
               <FormItem>
                 <FormLabel>Years of Experience</FormLabel>
                 <FormControl>
-                  <Input type="number" min="0" placeholder="e.g., 10" {...field} />
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="e.g., 10"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
+
+        {watchedDegree === 'Other' && (
+          <FormField
+            control={form.control}
+            name="otherDegree"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Please Specify Degree</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., DM in Cardiology" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}
@@ -239,33 +288,41 @@ export function DoctorRegistrationForm() {
             <FormItem>
               <FormLabel>Medical License/Certificate</FormLabel>
               <FormControl>
-                <div 
-                    className="relative flex justify-center items-center w-full h-48 border-2 border-dashed rounded-md border-muted-foreground/50 hover:border-primary transition-colors"
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
+                <div
+                  className="relative flex justify-center items-center w-full h-48 border-2 border-dashed rounded-md border-muted-foreground/50 hover:border-primary transition-colors"
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
                 >
-                    <Input 
-                        type="file" 
-                        className="absolute w-full h-full opacity-0 cursor-pointer"
-                        {...fileRef}
-                        onChange={handleFileChange}
-                        accept={ACCEPTED_FILE_TYPES.join(',')}
+                  <Input
+                    type="file"
+                    className="absolute w-full h-full opacity-0 cursor-pointer"
+                    {...fileRef}
+                    onChange={handleFileChange}
+                    accept={ACCEPTED_FILE_TYPES.join(',')}
+                  />
+                  {preview === 'pdf' ? (
+                    <div className="text-center text-muted-foreground flex flex-col items-center">
+                      <UploadCloud className="w-8 h-8 mb-2 text-primary" />
+                      <p>PDF file selected</p>
+                      <p className="text-xs">
+                        {form.getValues('certificate')?.[0]?.name}
+                      </p>
+                    </div>
+                  ) : preview ? (
+                    <Image
+                      src={preview}
+                      alt="Certificate Preview"
+                      layout="fill"
+                      objectFit="contain"
+                      className="rounded-md"
                     />
-                    {preview === 'pdf' ? (
-                        <div className="text-center text-muted-foreground flex flex-col items-center">
-                            <UploadCloud className="w-8 h-8 mb-2 text-primary" />
-                            <p>PDF file selected</p>
-                            <p className="text-xs">{form.getValues('certificate')?.[0]?.name}</p>
-                        </div>
-                    ) : preview ? (
-                         <Image src={preview} alt="Certificate Preview" layout="fill" objectFit="contain" className="rounded-md" />
-                    ) : (
-                        <div className="text-center text-muted-foreground flex flex-col items-center pointer-events-none">
-                            <UploadCloud className="w-8 h-8 mb-2" />
-                            <p>Click to upload or drag & drop</p>
-                            <p className="text-xs">Image or PDF (max 5MB)</p>
-                        </div>
-                    )}
+                  ) : (
+                    <div className="text-center text-muted-foreground flex flex-col items-center pointer-events-none">
+                      <UploadCloud className="w-8 h-8 mb-2" />
+                      <p>Click to upload or drag &amp; drop</p>
+                      <p className="text-xs">Image or PDF (max 5MB)</p>
+                    </div>
+                  )}
                 </div>
               </FormControl>
               <FormMessage />
@@ -273,8 +330,14 @@ export function DoctorRegistrationForm() {
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={isSubmitting || isVerifying}>
-          {(isSubmitting || isVerifying) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isSubmitting || isVerifying}
+        >
+          {(isSubmitting || isVerifying) && (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          )}
           {isVerifying ? 'Verifying Certificate...' : 'Register & Verify'}
         </Button>
       </form>
