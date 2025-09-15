@@ -10,6 +10,7 @@ import { VitalsMonitor } from './vitals-monitor';
 import { useData } from '@/contexts/data-provider';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Activity } from 'lucide-react';
+import { OfflineConsultation } from './offline-consultation';
 
 export function Dashboard() {
   const { isConnected } = useData();
@@ -17,6 +18,9 @@ export function Dashboard() {
   if (!isConnected) {
     return (
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+        <div className="lg:col-span-4">
+            <OfflineConsultation />
+        </div>
         <div className="col-span-1 lg:col-span-1">
           <DeviceManager />
         </div>
@@ -38,7 +42,11 @@ export function Dashboard() {
   }
 
   return (
+    <>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+        <div className="lg:col-span-4">
+            <OfflineConsultation />
+        </div>
       <div className="col-span-1 md:col-span-2 lg:col-span-4">
         <VitalsMonitor />
       </div>
@@ -56,5 +64,6 @@ export function Dashboard() {
         <TrendAnalysis />
       </div>
     </div>
+    </>
   );
 }
