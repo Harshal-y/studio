@@ -41,7 +41,7 @@ export function AppointmentChatbot() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollAreaViewportRef = useRef<HTMLDivElement>(null);
-  const { isAppointmentChatbotOpen, setAppointmentChatbotOpen, doctors, currentUser, currentDoctor } = useData();
+  const { isAppointmentChatbotOpen, setAppointmentChatbotOpen, doctors, currentUser, addPrescription } = useData();
   const { location, error: locationError } = useLocation();
   const { toast } = useToast();
 
@@ -80,6 +80,9 @@ export function AppointmentChatbot() {
         patientName: currentUser?.name,
       });
       const modelMessage: Message = { role: 'model', content: result.response, prescription: result.prescription };
+      if (result.prescription) {
+        addPrescription(result.prescription);
+      }
       setMessages((prev) => [...prev, modelMessage]);
     } catch (error) {
       console.error(error);

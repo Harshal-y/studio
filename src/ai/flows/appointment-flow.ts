@@ -10,9 +10,10 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool } from './appointment-tool';
+import { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool, viewPrescriptionsTool } from './appointment-tool';
 
 let appointments: { id: number, doctorId: number, doctorName: string, date: string, time: string, patientName: string, issue: string }[] = [];
+let prescriptions: any[] = [];
 
 
 const AppointmentFlowInputSchema = z.object({
@@ -40,23 +41,26 @@ const prompt = ai.definePrompt({
   name: 'appointmentPrompt',
   input: { schema: AppointmentFlowInputSchema },
   output: { schema: AppointmentFlowOutputSchema },
-  tools: [findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool],
+  tools: [findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool, viewPrescriptionsTool],
   prompt: `You are a helpful AI assistant in a healthcare app. Your role is to help users find doctors, book appointments, and generate prescriptions based on a doctor's instructions.
 You have access to several tools:
 - 'findDoctors': Recommends a doctor based on symptoms.
 - 'bookAppointment': Books an appointment with a specified doctor on a specific date.
 - 'generatePrescription': Creates a prescription document. Use this ONLY when a doctor provides explicit medication details in the prompt.
+- 'viewAppointments': Retrieves a list of the user's appointments.
+- 'viewPrescriptions': Retrieves a list of the user's prescriptions.
 
 Analyze the user's prompt to determine their intent.
 - If they want to find a doctor, use the 'findDoctors' tool.
 - If they want to book an appointment, use the 'bookAppointment' tool.
 - If the prompt contains information from a doctor about specific medicines, use the 'generatePrescription' tool. You must have the patient's name, doctor's name, and at least one medication with dosage. If you are missing information, ask for it. For example, if a doctor says "Prescribe Crocin 500mg twice a day", you should ask for the patient's name. Assume the doctor is the one interacting with you.
-- If they ask to view appointments, tell them to use the "View Appointments" tab.
+- If they ask to view appointments, use the 'viewAppointments' tool.
+- If they ask to view prescriptions, use the 'viewPrescriptions' tool.
 
 The user's input is:
 {{#if symptoms}}Symptoms: {{{symptoms}}}{{/if}}{#if issue}}Issue: {{{issue}}}{{/if}}{#if history}}Medical History: {{{history}}}{{/if}}
 User's message: {{{prompt}}}
-Your response should be conversational and helpful. Do not mention the 'viewAppointments' tool.`,
+Your response should be conversational and helpful.`,
 });
 
 
@@ -75,6 +79,7 @@ const internalAppointmentFlow = ai.defineFlow(
         const prescriptionToolResponse = history.find(m => m.role === 'tool' && m.content.some(p => p.toolResponse?.name === 'generatePrescription'));
         if (prescriptionToolResponse) {
              const prescription = prescriptionToolResponse.content[0].toolResponse!.response;
+             prescriptions.push(prescription); // Save the prescription
              return { response: output!.response, prescription: prescription };
         }
     }
@@ -101,4 +106,8 @@ export async function bookAppointment(input: z.infer<typeof bookAppointmentTool.
 
 export async function viewAppointments() {
     return await viewAppointmentsTool({});
+}
+
+export async function viewPrescriptions() {
+    return await viewPrescriptionsTool({});
 }

@@ -2,7 +2,7 @@
 
 'use client';
 
-import { allFamilyMembers, selfUser as defaultSelfUser, allDoctors, appointments as mockAppointments } from '@/data/mock-data';
+import { allFamilyMembers, selfUser as defaultSelfUser, allDoctors, appointments as mockAppointments, prescriptions as mockPrescriptions } from '@/data/mock-data';
 import { VitalsState } from '@/components/vitals-monitor';
 import React, {
   createContext,
@@ -62,6 +62,21 @@ export type Appointment = {
     issue: string;
 };
 
+export type Prescription = {
+    id: string;
+    patientName: string;
+    doctorName: string;
+    date: string;
+    medications: {
+        name: string;
+        dosage: string;
+        frequency: string;
+    }[];
+    status: string;
+    disclaimer: string;
+};
+
+
 interface DataContextType {
   currentUser: User | null;
   selfUser: User | null;
@@ -82,6 +97,8 @@ interface DataContextType {
   updateCurrentDoctor: (doctor: Partial<Doctor>) => void;
   appointments: Appointment[];
   addAppointment: (appointment: Appointment) => void;
+  prescriptions: Prescription[];
+  addPrescription: (prescription: Prescription) => void;
   isChatbotOpen: boolean;
   setChatbotOpen: (open: boolean) => void;
   isAppointmentChatbotOpen: boolean;
@@ -103,6 +120,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [doctors, setDoctors] = useState<Doctor[]>(allDoctors);
   const [currentDoctor, setCurrentDoctor] = useState<Doctor | null>(allDoctors[0] || null);
   const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>(mockPrescriptions);
   const [isChatbotOpen, setChatbotOpen] = useState(false);
   const [isAppointmentChatbotOpen, setAppointmentChatbotOpen] = useState(false);
 
@@ -206,6 +224,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setCurrentDoctor(prev => prev ? { ...prev, points: (prev.points || 0) + 20 } : null);
       }
   }
+  
+  const addPrescription = (prescription: Prescription) => {
+    setPrescriptions(prev => [...prev, prescription]);
+  }
 
   const toggleMonitoring = (userId: number) => {
     setAllUsers(prevUsers => 
@@ -242,6 +264,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     updateCurrentDoctor,
     appointments,
     addAppointment,
+    prescriptions,
+    addPrescription,
     isChatbotOpen,
     setChatbotOpen,
     isAppointmentChatbotOpen,

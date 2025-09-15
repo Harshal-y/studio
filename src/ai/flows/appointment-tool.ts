@@ -7,6 +7,7 @@ import { z } from 'zod';
 // This state is now managed in appointment-flow.ts
 // We are passing it in here to avoid circular dependencies and 'use server' issues.
 let _appointments: any[] = []; 
+let _prescriptions: any[] = [];
 
 const findDoctorsTool = ai.defineTool(
   {
@@ -74,7 +75,7 @@ const bookAppointmentTool = ai.defineTool(
 const viewAppointmentsTool = ai.defineTool(
   {
     name: 'viewAppointments',
-    description: "Do not use this tool. This is a placeholder.",
+    description: "Use this tool to view the user's upcoming and past appointments.",
     inputSchema: z.object({}),
     outputSchema: z.array(z.any()),
   },
@@ -102,15 +103,28 @@ const generatePrescriptionTool = ai.defineTool(
   },
   async (input) => {
     console.log('Generating prescription:', input);
-    // In a real app, this would generate a PDF or a secure document.
-    // For this example, we'll return a structured object.
-    return {
+    const newPrescription = {
         ...input,
         id: `PRES-${Date.now()}`,
         status: 'Generated',
         disclaimer: 'This is a digitally generated prescription. Please consult your pharmacist.'
     };
+    _prescriptions.push(newPrescription);
+    return newPrescription;
   }
 );
 
-export { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool };
+const viewPrescriptionsTool = ai.defineTool(
+  {
+    name: 'viewPrescriptions',
+    description: "Use this tool to view the user's prescriptions.",
+    inputSchema: z.object({}),
+    outputSchema: z.array(z.any()),
+  },
+  async () => {
+    return _prescriptions;
+  }
+);
+
+
+export { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool, viewPrescriptionsTool };

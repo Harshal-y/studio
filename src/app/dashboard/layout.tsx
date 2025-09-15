@@ -8,6 +8,7 @@ import {
   Bot,
   CalendarPlus,
   Copy,
+  FileText,
   HeartPulse,
   History,
   LogOut,
@@ -45,10 +46,11 @@ import { useState } from 'react';
 import { AddFamilyMemberDialog } from '@/components/add-family-member-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { AIChatBot } from '@/components/ai-chat-bot';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { AppointmentManager } from '@/components/appointment-manager';
 import { AppointmentReminder } from '@/components/appointment-reminder';
 import { AppointmentChatbot } from '@/components/appointment-chatbot';
+import { cn } from '@/lib/utils';
 
 
 function ProfileSwitcher() {
@@ -176,6 +178,14 @@ function ProfileSwitcher() {
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [isAppointmentManagerOpen, setIsAppointmentManagerOpen] = useState(false);
+  const pathname = usePathname();
+
+  const navItems = [
+    { href: '/dashboard', icon: HeartPulse, label: 'Dashboard' },
+    { href: '/dashboard/records', icon: FileText, label: 'Records' },
+    { href: '#', icon: Bot, label: 'AI Insights' },
+    { href: '#', icon: Users, label: 'Family' },
+  ];
 
   return (
     <>
@@ -193,54 +203,23 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             <span className="sr-only">TrackWell</span>
           </Link>
           <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/dashboard"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                >
-                  <HeartPulse className="h-5 w-5" />
-                  <span className="sr-only">Dashboard</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Dashboard</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="#"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                >
-                  <History className="h-5 w-5" />
-                  <span className="sr-only">History</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">History</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="#"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                >
-                  <Bot className="h-5 w-5" />
-                  <span className="sr-only">AI Insights</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">AI Insights</TooltipContent>
-            </Tooltip>
-             <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="#"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-                >
-                  <Users className="h-5 w-5" />
-                  <span className="sr-only">Family</span>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Family</TooltipContent>
-            </Tooltip>
+            {navItems.map((item) => (
+                <Tooltip key={item.label}>
+                    <TooltipTrigger asChild>
+                        <Link
+                        href={item.href}
+                        className={cn(
+                            "flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8",
+                            pathname === item.href && "bg-accent text-accent-foreground"
+                        )}
+                        >
+                        <item.icon className="h-5 w-5" />
+                        <span className="sr-only">{item.label}</span>
+                        </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">{item.label}</TooltipContent>
+                </Tooltip>
+            ))}
           </TooltipProvider>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
@@ -272,13 +251,19 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             <SheetContent side="left" className="sm:max-w-xs">
               <nav className="grid gap-6 text-lg font-medium">
                 <Logo />
-                <Link
-                  href="/dashboard"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <HeartPulse className="h-5 w-5" />
-                  Dashboard
-                </Link>
+                 {navItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={cn(
+                        "flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground",
+                        pathname === item.href && "text-foreground"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {item.label}
+                  </Link>
+                ))}
                 <Button
                   variant="ghost"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground justify-start text-lg font-medium"
@@ -287,27 +272,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   <CalendarPlus className="h-5 w-5" />
                   Book Appointment
                 </Button>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <History className="h-5 w-5" />
-                  History
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <Bot className="h-5 w-5" />
-                  AI Insights
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <Users className="h-5 w-5" />
-                  Family
-                </Link>
                 <Link
                   href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
