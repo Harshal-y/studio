@@ -1,5 +1,5 @@
 
-import type { User, Doctor, Appointment, Prescription } from '@/contexts/data-provider';
+import type { User, Doctor, Appointment, Prescription, LabTest } from '@/contexts/data-provider';
 
 const generateHistoricalData = () =>
   Array.from({ length: 7 }, (_, i) => {
@@ -150,6 +150,7 @@ export const userPreferences =
 
 export const appointments: Appointment[] = [];
 export const prescriptions: Prescription[] = [];
+export const labTests: LabTest[] = [];
 
 
 // Legacy exports for components that may not be updated yet

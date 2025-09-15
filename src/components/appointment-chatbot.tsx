@@ -27,12 +27,13 @@ type Message = {
   role: 'user' | 'model';
   content: string;
   prescription?: any;
+  labTest?: any;
 };
 
 const initialMessages: Message[] = [
     {
         role: 'model',
-        content: "Hi there! I can help you find a doctor or generate a prescription based on your doctor's instructions. How can I help?"
+        content: "Hi there! I can help you find a doctor, generate a prescription, or order a lab test based on your doctor's instructions. How can I help?"
     }
 ]
 
@@ -41,7 +42,7 @@ export function AppointmentChatbot() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollAreaViewportRef = useRef<HTMLDivElement>(null);
-  const { isAppointmentChatbotOpen, setAppointmentChatbotOpen, doctors, currentUser, addPrescription } = useData();
+  const { isAppointmentChatbotOpen, setAppointmentChatbotOpen, doctors, currentUser, addPrescription, addLabTest } = useData();
   const { location, error: locationError } = useLocation();
   const { toast } = useToast();
 
@@ -79,9 +80,12 @@ export function AppointmentChatbot() {
         doctors: doctors,
         patientName: currentUser?.name,
       });
-      const modelMessage: Message = { role: 'model', content: result.response, prescription: result.prescription };
+      const modelMessage: Message = { role: 'model', content: result.response, prescription: result.prescription, labTest: result.labTest };
       if (result.prescription) {
         addPrescription(result.prescription);
+      }
+      if (result.labTest) {
+        addLabTest(result.labTest);
       }
       setMessages((prev) => [...prev, modelMessage]);
     } catch (error) {
@@ -126,7 +130,7 @@ Disclaimer: ${prescription.disclaimer}
     URL.revokeObjectURL(url);
   };
 
-  const handleFindNearby = () => {
+  const handleFindNearby = (type: 'pharmacy' | 'labs') => {
     if (locationError) {
         toast({
             variant: 'destructive',
@@ -136,7 +140,8 @@ Disclaimer: ${prescription.disclaimer}
         return;
     }
     if (location) {
-        const url = `https://www.google.com/maps/search/pharmacy/@${location.latitude},${location.longitude},15z`;
+        const query = type === 'pharmacy' ? 'pharmacy' : 'diagnostic labs';
+        const url = `https://www.google.com/maps/search/${query}/@${location.latitude},${location.longitude},15z`;
         window.open(url, '_blank');
     } else {
          toast({
@@ -156,7 +161,7 @@ Disclaimer: ${prescription.disclaimer}
                 AI Appointment Helper
             </DialogTitle>
             <DialogDescription>
-                Describe your symptoms to find a doctor or provide prescription details from your doctor.
+                Describe your symptoms to find a doctor or provide instructions from your doctor.
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-hidden px-6">
@@ -211,10 +216,26 @@ Disclaimer: ${prescription.disclaimer}
                                     <Button asChild>
                                         <Link href="https://www.1mg.com" target="_blank">Order Online</Link>
                                     </Button>
-                                     <Button onClick={handleFindNearby}>
+                                     <Button onClick={() => handleFindNearby('pharmacy')}>
                                         Find Nearby
                                      </Button>
                                 </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                    {message.labTest && (
+                         <Card className="max-w-[80%] w-full">
+                            <CardHeader>
+                                <CardTitle className="text-base">Lab Test Ordered</CardTitle>
+                            </CardHeader>
+                            <CardContent className="text-sm space-y-2">
+                                <p><span className="font-semibold">Patient:</span> {message.labTest.patientName}</p>
+                                <p><span className="font-semibold">Doctor:</span> {message.labTest.doctorName}</p>
+                                <p><span className="font-semibold">Test:</span> {message.labTest.testName}</p>
+                                <p className="text-xs text-muted-foreground mt-2">You can view and manage this test in your Health Records.</p>
+                                <Button className="mt-4 w-full" variant="outline" onClick={() => handleFindNearby('labs')}>
+                                    Find Nearby Labs
+                                </Button>
                             </CardContent>
                         </Card>
                     )}

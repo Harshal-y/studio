@@ -1,18 +1,19 @@
 
 'use client';
 
-import { viewAppointments, viewPrescriptions } from '@/ai/flows/appointment-flow';
+import { viewAppointments, viewLabTests, viewPrescriptions } from '@/ai/flows/appointment-flow';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useData, Appointment, Prescription } from '@/contexts/data-provider';
+import { useData, Appointment, Prescription, LabTest } from '@/contexts/data-provider';
+import { useLocation } from '@/hooks/use-location';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { format, isPast } from 'date-fns';
-import { Calendar, Download, FileText, Stethoscope } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Calendar, Download, FileText, FlaskConical, MapPin, Stethoscope, Upload } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 const formatTime12h = (time24: string) => {
     if (!time24) return 'N/A';
@@ -183,15 +184,124 @@ function PrescriptionsTab() {
     );
 }
 
-function ReportsTab() {
-    return (
-        <div className="text-center text-muted-foreground py-16">
-            <FileText className="mx-auto h-12 w-12" />
-            <p className="mt-4">Health report functionality is coming soon.</p>
-        </div>
-    )
-}
+function LabReportsTab() {
+    const { labTests: initialLabTests, updateLabTest } = useData();
+    const [labTests, setLabTests] = useState<LabTest[]>(initialLabTests);
+    const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
+    const { location, error: locationError } = useLocation();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
 
+    useEffect(() => {
+        async function fetchLabTests() {
+            try {
+                const cloudTests = await viewLabTests();
+                const all = [...initialLabTests, ...cloudTests];
+                const uniqueTests = all.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)
+                setLabTests(uniqueTests);
+            } catch (error) {
+                toast({ variant: 'destructive', title: 'Error fetching lab tests' });
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchLabTests();
+    }, [initialLabTests, toast]);
+
+    const handleFindLabs = () => {
+        if (locationError) {
+            toast({ variant: 'destructive', title: 'Location Error', description: locationError });
+            return;
+        }
+        if (location) {
+            const url = `https://www.google.com/maps/search/diagnostic+labs/@${location.latitude},${location.longitude},14z`;
+            window.open(url, '_blank');
+        } else {
+            toast({ title: 'Finding Location...', description: 'Please wait...' });
+        }
+    };
+
+    const handleUploadClick = (testId: string) => {
+        setSelectedTestId(testId);
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file && selectedTestId) {
+            // In a real app, you'd upload this file and get a URL.
+            // For this demo, we'll simulate it with a blob URL.
+            const reportUrl = URL.createObjectURL(file);
+            updateLabTest(selectedTestId, 'Report Uploaded', reportUrl);
+            setLabTests(prev => prev.map(t => t.id === selectedTestId ? {...t, status: 'Report Uploaded', reportUrl} : t));
+            toast({ title: 'Success', description: 'Report uploaded successfully.' });
+        }
+         // Reset file input
+        if(fileInputRef.current) fileInputRef.current.value = '';
+        setSelectedTestId(null);
+    };
+
+    if (loading) {
+        return <div className="space-y-4">
+            <Skeleton className="h-24 w-full" />
+        </div>
+    }
+
+    return (
+        <div className="space-y-4">
+             <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="application/pdf,image/*"
+            />
+            {labTests.length === 0 ? (
+                 <p className="text-center text-muted-foreground py-8">
+                  You have no lab tests ordered.
+                </p>
+            ) : (
+                 [...labTests].sort((a,b) => new Date(b.dateOrdered).getTime() - new Date(a.dateOrdered).getTime()).map(test => (
+                     <Card key={test.id}>
+                        <CardHeader>
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <CardTitle className="text-lg">{test.testName}</CardTitle>
+                                    <CardDescription>
+                                        Ordered by Dr. {test.doctorName} on {format(new Date(test.dateOrdered), 'PPP')}
+                                    </CardDescription>
+                                </div>
+                                <Badge variant={test.status === 'Ordered' ? 'outline' : 'secondary'}>
+                                    {test.status}
+                                </Badge>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="flex flex-col sm:flex-row gap-2">
+                             <Button variant="outline" onClick={handleFindLabs}>
+                                <MapPin className="mr-2 h-4 w-4" />
+                                Find Nearby Labs
+                             </Button>
+                             {test.reportUrl ? (
+                                <Button asChild>
+                                    <a href={test.reportUrl} target="_blank" rel="noopener noreferrer">
+                                        <Download className="mr-2 h-4 w-4" />
+                                        View Report
+                                    </a>
+                                </Button>
+                             ) : (
+                                <Button onClick={() => handleUploadClick(test.id)}>
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    Upload Report
+                                </Button>
+                             )}
+                        </CardContent>
+                    </Card>
+                ))
+            )}
+        </div>
+    );
+}
 
 export default function RecordsPage() {
     return (
@@ -211,8 +321,8 @@ export default function RecordsPage() {
                         Prescriptions
                     </TabsTrigger>
                     <TabsTrigger value="reports">
-                        <FileText className="mr-2 h-4 w-4" />
-                        Reports
+                        <FlaskConical className="mr-2 h-4 w-4" />
+                        Lab Reports
                     </TabsTrigger>
                 </TabsList>
                 <TabsContent value="appointments">
@@ -222,7 +332,7 @@ export default function RecordsPage() {
                     <PrescriptionsTab />
                 </TabsContent>
                 <TabsContent value="reports">
-                    <ReportsTab />
+                    <LabReportsTab />
                 </TabsContent>
             </Tabs>
         </div>

@@ -8,6 +8,7 @@ import { z } from 'zod';
 // We are passing it in here to avoid circular dependencies and 'use server' issues.
 let _appointments: any[] = []; 
 let _prescriptions: any[] = [];
+let _labTests: any[] = [];
 
 const findDoctorsTool = ai.defineTool(
   {
@@ -27,7 +28,7 @@ const findDoctorsTool = ai.defineTool(
   },
   async (input) => {
     // In a real app, you would have more complex logic to match doctors.
-    // For this example, we'll just recommend the first doctor if symptoms are present.
+    // For this example, we'll recommend the first doctor if symptoms are present.
     if (input.doctors.length > 0 && (input.symptoms || input.issue)) {
         const recommendedDoctor = input.doctors[0];
         return {
@@ -126,5 +127,30 @@ const viewPrescriptionsTool = ai.defineTool(
   }
 );
 
+const orderLabTestTool = ai.defineTool(
+  {
+    name: 'orderLabTest',
+    description: 'Use this tool to order a lab test for a patient.',
+    inputSchema: z.object({
+      patientName: z.string().describe("The full name of the patient."),
+      testName: z.string().describe("The name of the lab test to be ordered."),
+      doctorName: z.string().describe("The name of the doctor ordering the test."),
+    }),
+    outputSchema: z.any(),
+  },
+  async (input) => {
+    console.log('Ordering lab test:', input);
+    const newLabTest = {
+      id: `TEST-${Date.now()}`,
+      ...input,
+      dateOrdered: new Date().toISOString().split('T')[0],
+      status: 'Ordered', // Initial status
+      reportUrl: null,
+    };
+    _labTests.push(newLabTest);
+    return newLabTest;
+  }
+);
 
-export { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool, viewPrescriptionsTool };
+
+export { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool, viewPrescriptionsTool, orderLabTestTool };

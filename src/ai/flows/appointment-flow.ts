@@ -10,10 +10,11 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool, viewPrescriptionsTool } from './appointment-tool';
+import { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool, viewPrescriptionsTool, orderLabTestTool } from './appointment-tool';
 
 let appointments: { id: number, doctorId: number, doctorName: string, date: string, time: string, patientName: string, issue: string }[] = [];
 let prescriptions: any[] = [];
+let labTests: any[] = [];
 
 
 const AppointmentFlowInputSchema = z.object({
@@ -32,7 +33,8 @@ const AppointmentFlowOutputSchema = z.object({
     .describe(
       'A conversational response to the user. This could be a recommendation, a confirmation, or a question.'
     ),
-  prescription: z.any().optional().describe("The generated prescription object, if any.")
+  prescription: z.any().optional().describe("The generated prescription object, if any."),
+  labTest: z.any().optional().describe("The generated lab test order, if any.")
 });
 export type AppointmentFlowOutput = z.infer<typeof AppointmentFlowOutputSchema>;
 
@@ -41,19 +43,21 @@ const prompt = ai.definePrompt({
   name: 'appointmentPrompt',
   input: { schema: AppointmentFlowInputSchema },
   output: { schema: AppointmentFlowOutputSchema },
-  tools: [findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool, viewPrescriptionsTool],
-  prompt: `You are a helpful AI assistant in a healthcare app. Your role is to help users find doctors, book appointments, and generate prescriptions based on a doctor's instructions.
+  tools: [findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool, viewPrescriptionsTool, orderLabTestTool],
+  prompt: `You are a helpful AI assistant in a healthcare app. Your role is to help users find doctors, book appointments, generate prescriptions, and order lab tests based on a doctor's instructions.
 You have access to several tools:
 - 'findDoctors': Recommends a doctor based on symptoms.
 - 'bookAppointment': Books an appointment with a specified doctor on a specific date.
 - 'generatePrescription': Creates a prescription document. Use this ONLY when a doctor provides explicit medication details in the prompt.
+- 'orderLabTest': Orders a lab test for a patient. Use this ONLY when a doctor explicitly asks to order a test.
 - 'viewAppointments': Retrieves a list of the user's appointments.
 - 'viewPrescriptions': Retrieves a list of the user's prescriptions.
 
 Analyze the user's prompt to determine their intent.
 - If they want to find a doctor, use the 'findDoctors' tool.
 - If they want to book an appointment, use the 'bookAppointment' tool.
-- If the prompt contains information from a doctor about specific medicines, use the 'generatePrescription' tool. You must have the patient's name, doctor's name, and at least one medication with dosage. If you are missing information, ask for it. For example, if a doctor says "Prescribe Crocin 500mg twice a day", you should ask for the patient's name. Assume the doctor is the one interacting with you.
+- If the prompt contains information from a doctor about specific medicines, use the 'generatePrescription' tool. You must have the patient's name, doctor's name, and at least one medication with dosage. If you are missing information, ask for it.
+- If a doctor's prompt includes ordering a lab test (e.g., "order a CBC test"), use the 'orderLabTest' tool.
 - If they ask to view appointments, use the 'viewAppointments' tool.
 - If they ask to view prescriptions, use the 'viewPrescriptions' tool.
 
@@ -73,18 +77,29 @@ const internalAppointmentFlow = ai.defineFlow(
   async (input) => {
     const { output, history } = await prompt(input);
 
+    let response = output!.response;
+    let prescription: any = null;
+    let labTest: any = null;
+
     const prescriptionToolCall = history.find(m => m.role === 'model' && m.content.some(p => p.toolRequest?.name === 'generatePrescription'));
-    
     if (prescriptionToolCall) {
         const prescriptionToolResponse = history.find(m => m.role === 'tool' && m.content.some(p => p.toolResponse?.name === 'generatePrescription'));
         if (prescriptionToolResponse) {
-             const prescription = prescriptionToolResponse.content[0].toolResponse!.response;
+             prescription = prescriptionToolResponse.content[0].toolResponse!.response;
              prescriptions.push(prescription); // Save the prescription
-             return { response: output!.response, prescription: prescription };
+        }
+    }
+
+    const labTestToolCall = history.find(m => m.role === 'model' && m.content.some(p => p.toolRequest?.name === 'orderLabTest'));
+    if (labTestToolCall) {
+        const labTestToolResponse = history.find(m => m.role === 'tool' && m.content.some(p => p.toolResponse?.name === 'orderLabTest'));
+        if (labTestToolResponse) {
+             labTest = labTestToolResponse.content[0].toolResponse!.response;
+             labTests.push(labTest); // Save the lab test
         }
     }
    
-    return { response: output!.response };
+    return { response, prescription, labTest };
   }
 );
 
@@ -110,4 +125,10 @@ export async function viewAppointments() {
 
 export async function viewPrescriptions() {
     return await viewPrescriptionsTool({});
+}
+
+export async function viewLabTests() {
+    // In a real app, this would fetch from a database.
+    // For now, it returns the in-memory list.
+    return labTests;
 }
