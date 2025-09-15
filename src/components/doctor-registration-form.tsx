@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, DragEvent } from 'react';
 import { uploadCertificate } from '@/app/actions';
 import { verifyDoctorCertificate } from '@/ai/flows/verify-doctor-certificate-flow';
 import { Loader2, UploadCloud } from 'lucide-react';
@@ -87,21 +87,41 @@ export function DoctorRegistrationForm() {
 
   const { isSubmitting } = form.formState;
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileSelect = (file: File | null) => {
     if (file) {
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        } else if (file.type === 'application/pdf') {
-            // For PDFs, we just show a generic icon or file name, not a preview.
-            setPreview('pdf'); // Special value to indicate a PDF is selected
-        }
+      // Manually set the value for react-hook-form
+      form.setValue('certificate', [file], { shouldValidate: true });
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else if (file.type === 'application/pdf') {
+        setPreview('pdf');
+      }
     } else {
+      form.resetField('certificate');
       setPreview(null);
+    }
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    handleFileSelect(e.target.files?.[0] || null);
+  };
+  
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFileSelect(files[0]);
     }
   };
 
@@ -219,7 +239,11 @@ export function DoctorRegistrationForm() {
             <FormItem>
               <FormLabel>Medical License/Certificate</FormLabel>
               <FormControl>
-                <div className="relative flex justify-center items-center w-full h-48 border-2 border-dashed rounded-md border-muted-foreground/50 hover:border-primary transition-colors">
+                <div 
+                    className="relative flex justify-center items-center w-full h-48 border-2 border-dashed rounded-md border-muted-foreground/50 hover:border-primary transition-colors"
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                >
                     <Input 
                         type="file" 
                         className="absolute w-full h-full opacity-0 cursor-pointer"
@@ -236,7 +260,7 @@ export function DoctorRegistrationForm() {
                     ) : preview ? (
                          <Image src={preview} alt="Certificate Preview" layout="fill" objectFit="contain" className="rounded-md" />
                     ) : (
-                        <div className="text-center text-muted-foreground flex flex-col items-center">
+                        <div className="text-center text-muted-foreground flex flex-col items-center pointer-events-none">
                             <UploadCloud className="w-8 h-8 mb-2" />
                             <p>Click to upload or drag & drop</p>
                             <p className="text-xs">Image or PDF (max 5MB)</p>
