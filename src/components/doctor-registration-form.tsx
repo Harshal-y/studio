@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { useState, ChangeEvent, DragEvent } from 'react';
+import { useState, ChangeEvent, DragEvent, useEffect } from 'react';
 import { uploadCertificate } from '@/app/actions';
 import { verifyDoctorCertificate } from '@/ai/flows/verify-doctor-certificate-flow';
 import { Loader2, UploadCloud } from 'lucide-react';
@@ -96,6 +96,23 @@ export function DoctorRegistrationForm() {
       experience: 0,
     },
   });
+  
+  useEffect(() => {
+    const handleWindowDragOver = (e: globalThis.DragEvent) => {
+      e.preventDefault();
+    };
+    const handleWindowDrop = (e: globalThis.DragEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('dragover', handleWindowDragOver);
+    window.addEventListener('drop', handleWindowDrop);
+
+    return () => {
+      window.removeEventListener('dragover', handleWindowDragOver);
+      window.removeEventListener('drop', handleWindowDrop);
+    };
+  }, []);
 
   const { isSubmitting } = form.formState;
   const watchedDegree = form.watch('degree');
