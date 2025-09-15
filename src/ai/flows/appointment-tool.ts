@@ -84,4 +84,33 @@ const viewAppointmentsTool = ai.defineTool(
   }
 );
 
-export { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool };
+const generatePrescriptionTool = ai.defineTool(
+  {
+    name: 'generatePrescription',
+    description: 'Use this tool to generate a prescription for a patient.',
+    inputSchema: z.object({
+      patientName: z.string().describe("The full name of the patient."),
+      doctorName: z.string().describe("The full name of the prescribing doctor."),
+      date: z.string().describe('The date of the prescription (e.g., "YYYY-MM-DD").'),
+      medications: z.array(z.object({
+        name: z.string().describe("The name of the medication."),
+        dosage: z.string().describe("The dosage instructions (e.g., '500mg')."),
+        frequency: z.string().describe("How often to take the medication (e.g., 'Twice a day')."),
+      })).describe("A list of prescribed medications.")
+    }),
+    outputSchema: z.any(),
+  },
+  async (input) => {
+    console.log('Generating prescription:', input);
+    // In a real app, this would generate a PDF or a secure document.
+    // For this example, we'll return a structured object.
+    return {
+        ...input,
+        id: `PRES-${Date.now()}`,
+        status: 'Generated',
+        disclaimer: 'This is a digitally generated prescription. Please consult your pharmacist.'
+    };
+  }
+);
+
+export { findDoctorsTool, bookAppointmentTool, viewAppointmentsTool, generatePrescriptionTool };
